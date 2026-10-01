@@ -1,0 +1,20 @@
+{
+  "name": "agent-logbook",
+  "interface": {
+    "displayName": "Agent Logbook"
+  },
+  "plugins": [
+    {
+      "name": "agent-logbook",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-logbook"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
