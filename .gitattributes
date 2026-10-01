@@ -1,0 +1,3 @@
+# Plain text with LF everywhere, also in a clone on Windows; fonts stay binary.
+* text=auto eol=lf
+*.woff2 binary

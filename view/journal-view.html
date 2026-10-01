@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Журнал проекта</title>
+<!--
+  Оформление — по образу «Системы Райта» (raytsystem, Apache-2.0): палитра, шрифты, экраны
+  «Центр управления» и «Вселенная». Шрифты IBM Plex и Bricolage Grotesque — SIL OFL 1.1
+  (view/fonts/FONTS-OFL-1.1.txt). Данные — только журнал этого компьютера; страница никуда
+  ничего не отправляет.
+-->
+<style>
+/*__FONTS__*/
+:root {
+  --carbon: #090a0d; --carbon-soft: #0d1014; --surface: #12161b; --surface-2: #171c22;
+  --raised: #1a2027; --raised-2: #202832; --line: #29313a; --line-soft: #20262d;
+  --bone: #f2eee6; --muted: #a6afbb; --muted-2: #808b97;
+  --tangerine: #ff8a5b; --periwinkle: #a99cf8; --cyan: #63d8d2; --gold: #ddbb65;
+  --rose: #ff7085; --mint: #75d4a1; --blue: #78a9ff; --on-accent: #15100d;
+  --hover: color-mix(in srgb, var(--bone) 7%, transparent);
+  --radius-sm: 11px; --radius: 16px; --radius-lg: 24px;
+  --shadow: 0 24px 70px rgba(0, 0, 0, .3);
+  --sans: "IBM Plex Sans Variable", system-ui, sans-serif;
+  --brand: "Bricolage Grotesque Variable", var(--sans);
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --carbon: #eae8e1; --carbon-soft: #f2f0e9; --surface: #f7f5ef; --surface-2: #efede6;
+  --raised: #ffffff; --raised-2: #e6e3dc; --line: #d2cec4; --line-soft: #dedad1;
+  --bone: #17191d; --muted: #59616b; --muted-2: #4b5560;
+  --tangerine: #a7471f; --periwinkle: #5f55a5; --cyan: #0d6f73; --gold: #765b14;
+  --rose: #b4233d; --mint: #1b7548; --blue: #1f5fae; --on-accent: #fff;
+  --shadow: 0 24px 70px rgba(30, 28, 24, .12);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--carbon); color: var(--bone); font: 14px/1.5 var(--sans); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.app { display: grid; grid-template-columns: 250px 1fr; height: 100vh; }
+.app.inspecting { grid-template-columns: 250px 1fr 400px; }
+
+/* sidebar */
+.sidebar { background: linear-gradient(180deg, var(--carbon-soft), var(--carbon)); border-right: 1px solid var(--line-soft); display: flex; flex-direction: column; padding: 22px 14px; gap: 22px; overflow: auto; }
+.brand { display: flex; gap: 10px; align-items: flex-start; padding: 0 8px; }
+.brand b { color: var(--tangerine); font: 700 18px/1 var(--mono); }
+.brand span { display: block; font: 600 13px/1.2 var(--brand); color: var(--tangerine); }
+.brand small { color: var(--muted-2); font: 11px var(--mono); }
+.nav-title { font: 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); padding: 0 10px 8px; }
+.nav button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid transparent; border-radius: var(--radius-sm); background: none; cursor: pointer; text-align: left; }
+.nav button:hover { background: var(--hover); }
+.nav button[aria-current="page"] { background: color-mix(in srgb, var(--tangerine) 12%, var(--surface)); border-color: color-mix(in srgb, var(--tangerine) 45%, transparent); }
+.nav svg { width: 16px; height: 16px; flex: none; }
+.side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--line-soft); color: var(--muted-2); font-size: 12px; }
+.side-foot strong { display: block; color: var(--bone); font-size: 13px; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 6px; vertical-align: middle; }
+
+/* main */
+main { overflow: auto; display: flex; flex-direction: column; min-width: 0; }
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 20px 28px 16px; border-bottom: 1px solid var(--line-soft); position: sticky; top: 0; background: color-mix(in srgb, var(--carbon) 92%, transparent); backdrop-filter: blur(8px); z-index: 5; }
+.kicker { font: 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted-2); margin-bottom: 6px; }
+.top h1 { margin: 0; font: 600 26px/1.1 var(--sans); display: inline; }
+.top .sub { color: var(--muted); margin-left: 10px; font-size: 13px; }
+.top-actions { display: flex; gap: 8px; align-items: center; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font: 11px var(--mono); color: var(--muted); }
+.pill.ok { color: var(--mint); }
+.icon-btn { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; display: grid; place-items: center; }
+.icon-btn:hover { background: var(--raised); }
+.view { padding: 22px 28px 40px; display: none; }
+.view.active { display: block; }
+
+/* cards */
+.card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 20px; }
+.grid { display: grid; gap: 16px; }
+.hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.hero-main { position: relative; overflow: hidden; min-height: 300px; display: flex; flex-direction: column; justify-content: center; }
+.hero-main h2 { font: 400 44px/1.05 var(--sans); margin: 10px 0 14px; letter-spacing: -.01em; max-width: 12ch; }
+.hero-main h2 em { font-style: normal; color: var(--tangerine); }
+.hero-main p { color: var(--muted); max-width: 48ch; margin: 0 0 20px; }
+.hero-orbit { position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 300px; height: 300px; opacity: .9; pointer-events: none; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--raised); cursor: pointer; font-weight: 500; }
+.btn.primary { background: var(--tangerine); color: var(--on-accent); border-color: transparent; }
+.btn:hover { filter: brightness(1.08); }
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 16px 0; }
+.stat .label { font: 10px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); }
+.stat .value { font: 500 34px/1.1 var(--sans); margin: 8px 0 4px; }
+.stat .note { color: var(--muted); font-size: 12px; }
+.two { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.card h3 { margin: 0 0 4px; font: 600 16px/1.3 var(--sans); }
+.card .hint { color: var(--muted-2); font-size: 12px; margin-bottom: 14px; }
+.list { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; gap: 10px; align-items: flex-start; padding: 9px 10px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; background: none; text-align: left; width: 100%; }
+.row:hover { background: var(--hover); border-color: var(--line-soft); }
+.row .t { flex: 1; min-width: 0; }
+.row .t b { display: block; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .t small { color: var(--muted-2); font-size: 12px; }
+.agent { flex: none; width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; }
+.agent.claude { background: var(--tangerine); } .agent.cowork { background: var(--periwinkle); } .agent.codex { background: var(--cyan); }
+.bar-line { display: grid; grid-template-columns: 1fr 44px; gap: 10px; align-items: center; padding: 6px 4px; cursor: pointer; border-radius: 8px; }
+.bar-line:hover { background: var(--hover); }
+.bar-line .name { font: 12px var(--mono); color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-line .track { height: 4px; background: var(--line-soft); border-radius: 4px; margin-top: 5px; }
+.bar-line .fill { height: 4px; background: var(--mint); border-radius: 4px; }
+.bar-line .num { text-align: right; font: 12px var(--mono); color: var(--muted); }
+.weeks svg { width: 100%; height: 170px; display: block; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+
+/* universe */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+.tabs { display: inline-flex; gap: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 13px; }
+.tabs button { border: 1px solid transparent; background: none; padding: 7px 12px; border-radius: 9px; cursor: pointer; font-size: 13px; color: var(--muted); display: inline-flex; gap: 7px; align-items: center; }
+.tabs button[aria-pressed="true"] { background: var(--raised-2); color: var(--bone); border-color: var(--line); }
+.search { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 40px; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 13px; }
+.search input { flex: 1; background: none; border: 0; color: var(--bone); font: inherit; outline: none; }
+.meta-line { font: 11px var(--mono); color: var(--muted-2); display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 12px; }
+.meta-line .ok { color: var(--mint); }
+.stage { position: relative; height: calc(100vh - 250px); min-height: 520px; background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--periwinkle) 7%, var(--surface)) 0%, var(--surface) 55%, var(--carbon-soft) 100%); border: 1px solid var(--line-soft); border-radius: var(--radius-lg); overflow: hidden; }
+.stage svg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
+.stage svg.dragging { cursor: grabbing; }
+.stage .corner { position: absolute; top: 14px; right: 14px; display: flex; gap: 8px; }
+.stage .note { position: absolute; left: 16px; bottom: 14px; font: 11px var(--mono); color: var(--muted-2); max-width: 60%; }
+.tooltip { position: fixed; pointer-events: none; z-index: 20; max-width: 340px; background: var(--raised); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; box-shadow: var(--shadow); font-size: 12px; display: none; }
+.tooltip b { display: block; font-size: 13px; margin-bottom: 2px; }
+.tooltip small { color: var(--muted); }
+.ring { fill: none; stroke: var(--line); stroke-opacity: .5; }
+.ring.dash { stroke-dasharray: 2 6; }
+.tick { fill: var(--muted-2); font: 10px var(--mono); }
+/* «Орбита» shows no lines until a node is pointed at: all links at once are the web nobody can read. */
+.edge { fill: none; stroke: var(--muted-2); stroke-opacity: 0; stroke-width: 1; }
+svg.links .edge { stroke-opacity: .08; }
+.edge.hot, svg.links .edge.hot { stroke: var(--tangerine); stroke-opacity: .8; stroke-width: 1.6; }
+.node { cursor: pointer; }
+.node circle { stroke: var(--carbon); stroke-width: 1.5; transition: opacity .15s; }
+.node.dim { opacity: .14; }
+.node.sel circle { stroke: var(--bone); stroke-width: 2.5; }
+.area-label { fill: var(--bone); font: 11px var(--mono); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.center-label { fill: var(--bone); font: 600 13px var(--sans); text-anchor: middle; }
+.center-sub { fill: var(--muted); font: 10px var(--mono); text-anchor: middle; }
+
+/* feed */
+.day { margin-bottom: 18px; }
+.day-head { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 4px 8px; border-bottom: 1px solid var(--line-soft); margin-bottom: 6px; }
+.day-head b { font: 600 15px var(--sans); }
+.day-head span { font: 11px var(--mono); color: var(--muted-2); }
+.feed-chat .t small.first { display: block; color: var(--muted); font-size: 12px; white-space: normal; margin-top: 2px; }
+details.day-commits { margin: 4px 10px 0 29px; font-size: 12px; color: var(--muted); }
+details.day-commits summary { cursor: pointer; font: 11px var(--mono); color: var(--muted-2); padding: 4px 0; }
+details.day-commits li { margin: 3px 0; }
+code, .mono { font-family: var(--mono); font-size: 12px; }
+
+/* inspector */
+.inspector { border-left: 1px solid var(--line-soft); background: var(--carbon-soft); overflow: auto; padding: 20px 20px 40px; display: none; }
+.app.inspecting .inspector { display: block; }
+.inspector .close { float: right; }
+.inspector h2 { font: 600 19px/1.25 var(--sans); margin: 6px 0 6px; }
+.inspector .dates { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+.block { margin: 16px 0; }
+.block .label { font: 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); margin-bottom: 8px; }
+.quote { background: var(--surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--tangerine); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; font-size: 13px; }
+.quote.agent-q { border-left-color: var(--muted-2); color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 4px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font: 11px var(--mono); cursor: pointer; }
+.chip:hover { border-color: var(--mint); }
+.files { list-style: none; padding: 0; margin: 0; font: 12px var(--mono); color: var(--muted); }
+.files li { padding: 2px 0; overflow-wrap: anywhere; }
+.commits { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+.commits li { padding: 4px 0; border-bottom: 1px dashed var(--line-soft); }
+.commits code { color: var(--gold); margin-right: 6px; }
+.id-line { font: 11px var(--mono); color: var(--muted-2); overflow-wrap: anywhere; }
+.muted { color: var(--muted); }
+
+/* tasks and the project's dashboard */
+.fresh { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; margin-bottom: 16px; border-left: 3px solid var(--mint); }
+.fresh.stale { border-left-color: var(--gold); }
+.fresh h2 { margin: 6px 0 4px; font: 600 20px/1.25 var(--sans); }
+.fresh .since { font-size: 14px; margin-top: 8px; }
+.fresh .since b { color: var(--gold); }
+.fresh.ok .since b { color: var(--mint); }
+.fresh details { margin-top: 10px; }
+.fresh summary { cursor: pointer; font: 12px var(--mono); color: var(--muted); }
+.sec-title { font: 600 16px var(--sans); margin: 22px 0 10px; display: flex; gap: 8px; align-items: baseline; }
+/* A section the project has no data for stays out of sight, whatever display its class gives it. */
+[hidden] { display: none !important; }
+.sec-title span { font: 12px var(--mono); color: var(--muted-2); }
+.blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.block-card { padding: 14px; cursor: pointer; }
+.block-card .pct { font: 500 26px/1 var(--sans); margin: 6px 0 8px; }
+.block-card .bar { height: 4px; border-radius: 4px; background: var(--line-soft); }
+.block-card .bar i { display: block; height: 4px; border-radius: 4px; background: var(--mint); }
+.block-card .s { color: var(--muted); font-size: 12px; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.block-card.open .s { display: block; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start; }
+.col { background: var(--carbon-soft); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 12px; }
+.col h3 { margin: 2px 4px 10px; font: 600 15px var(--sans); display: flex; justify-content: space-between; }
+.col h3 span { font: 12px var(--mono); color: var(--muted-2); }
+.task { background: var(--surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+.task.stop { border-left-color: var(--rose); } .task.warn { border-left-color: var(--gold); } .task.focus { border-left-color: var(--tangerine); }
+.task.taken { border-left-color: var(--cyan); }
+.task .badge { display: inline-block; font: 11px var(--mono); margin-top: 6px; padding: 2px 7px; border-radius: 6px; background: color-mix(in srgb, var(--cyan) 16%, transparent); color: var(--cyan); }
+.task .badge.done { background: color-mix(in srgb, var(--mint) 16%, transparent); color: var(--mint); }
+.task .tt { font-weight: 500; font-size: 13px; }
+.task .tm { font: 11px var(--mono); color: var(--muted-2); margin-top: 4px; }
+.task .td { color: var(--muted); font-size: 12px; margin-top: 6px; display: none; white-space: pre-wrap; }
+.task.open .td { display: block; }
+.task .td i, .dec i { color: var(--bone); }
+.dec { padding: 8px 4px; border-bottom: 1px dashed var(--line-soft); }
+.dec .dd { font: 11px var(--mono); color: var(--gold); margin-right: 8px; }
+.dec .dy { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.kpis div { background: var(--carbon-soft); border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px; }
+.kpis b { display: block; font: 500 20px var(--sans); }
+.kpis small { color: var(--muted); font-size: 11px; }
+table.ord { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.ord th, table.ord td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line-soft); }
+table.ord th { font: 10px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted-2); }
+.flag { display: flex; gap: 10px; padding: 7px 4px; border-bottom: 1px dashed var(--line-soft); }
+.flag .sw { flex: none; font: 10px var(--mono); padding: 2px 7px; border-radius: 6px; height: fit-content; }
+.flag .sw.on { background: color-mix(in srgb, var(--mint) 18%, transparent); color: var(--mint); }
+.flag .sw.off { background: color-mix(in srgb, var(--muted-2) 18%, transparent); color: var(--muted); }
+.flag small { display: block; color: var(--muted); font-size: 12px; }
+.tasks-summary { display: flex; gap: 18px; flex-wrap: wrap; margin: 6px 0 12px; }
+.tasks-summary div b { display: block; font: 500 28px/1.1 var(--sans); }
+.tasks-summary div small { color: var(--muted); font-size: 12px; }
+
+/*
+ * Larger and livelier: the sizes above stay as the design's base; this block lifts the small print by
+ * one step, so a later change to the base still shows through.
+ */
+body { font-size: 15.5px; }
+.app { grid-template-columns: 270px 1fr; }
+.app.inspecting { grid-template-columns: 270px 1fr 440px; }
+.brand span { font-size: 15px; }
+.brand small, .pill, .chip, .meta-line, .stage .note, .id-line, .day-head span, details.day-commits summary, .fresh summary { font-size: 12.5px; }
+.nav-title, .kicker, .stat .label, .block .label { font-size: 11.5px; }
+.nav button { padding: 11px 12px; font-size: 15.5px; }
+.nav svg { width: 18px; height: 18px; }
+.side-foot { font-size: 13.5px; } .side-foot strong { font-size: 14.5px; }
+.top h1 { font-size: 30px; } .top .sub { font-size: 14.5px; }
+.card { padding: 22px; }
+.card h3 { font-size: 18px; }
+.card .hint, .stat .note, .row .t small, .legend, .feed-chat .t small.first, details.day-commits { font-size: 13.5px; }
+.stat .value { font-size: 38px; }
+.bar-line .name, .bar-line .num, code, .mono, .files, .commits, .tooltip { font-size: 13.5px; }
+.tooltip b, .quote { font-size: 14.5px; }
+.inspector h2 { font-size: 21px; } .inspector .dates { font-size: 13.5px; }
+.day-head b { font-size: 17px; }
+.tabs button { font-size: 14.5px; }
+.fresh h2 { font-size: 24px; } .fresh .since { font-size: 15.5px; }
+.sec-title { font-size: 19px; } .sec-title span { font-size: 13px; }
+.block-card .pct { font-size: 30px; } .block-card .s { font-size: 13.5px; }
+.dec .dd { font-size: 12.5px; } .dec .dy { font-size: 13.5px; }
+table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
+.flag small { font-size: 13.5px; } .flag .sw { font-size: 11.5px; }
+.kpis b { font-size: 23px; } .kpis small { font-size: 12.5px; }
+
+/* the task plate in the control centre: the one place to click through to the list */
+.tasks-plate { margin-top: 16px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 28px; padding: 24px 26px;
+  border: 1px solid color-mix(in srgb, var(--tangerine) 45%, var(--line-soft));
+  background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--tangerine) 16%, transparent), transparent 55%),
+              radial-gradient(90% 120% at 100% 100%, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 60%), var(--surface); }
+.tasks-plate h3 { font: 600 24px/1.2 var(--brand); margin: 2px 0 6px; }
+.tasks-plate .tasks-summary { gap: 26px; margin: 10px 0 8px; }
+.tasks-plate .tasks-summary div b { font: 500 44px/1 var(--sans); }
+.tasks-plate .tasks-summary div:nth-child(1) b { color: var(--tangerine); }
+.tasks-plate .tasks-summary div:nth-child(2) b { color: var(--gold); }
+.tasks-plate .tasks-summary div:nth-child(3) b { color: var(--cyan); }
+.tasks-plate .tasks-summary div:nth-child(4) b { color: var(--mint); }
+.tasks-plate .tasks-summary div small { font-size: 14px; }
+.plate-go { font-size: 17px; padding: 15px 22px; border-radius: 14px; box-shadow: 0 10px 30px color-mix(in srgb, var(--tangerine) 30%, transparent); }
+.plate-go span { transition: transform .15s ease; } .plate-go:hover span { transform: translateX(3px); }
+@media (max-width: 760px) { .tasks-plate { grid-template-columns: 1fr; } }
+
+/* task columns and cards */
+.cols { gap: 18px; }
+.col { padding: 14px; border-top: 3px solid var(--line); border-radius: var(--radius); }
+.col.c-focus { border-top-color: var(--tangerine); } .col.c-wait { border-top-color: var(--gold); } .col.c-queue { border-top-color: var(--cyan); }
+.col h3 { font-size: 18px; margin-bottom: 12px; align-items: center; }
+.col h3 span { font: 600 13px/1 var(--mono); padding: 5px 10px; border-radius: 99px; background: var(--raised); color: var(--muted); }
+.task { padding: 13px 15px; border-radius: 13px; margin-bottom: 10px; transition: transform .12s ease, box-shadow .12s ease; }
+.task:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0, 0, 0, .18); }
+.task .tt { font-size: 15.5px; line-height: 1.35; }
+.task .tm { font-size: 12.5px; }
+.task .td { font-size: 14px; line-height: 1.55; }
+.task .badge { font-size: 12.5px; padding: 3px 9px; }
+.tchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.tchip { font: 500 12.5px/1 var(--sans); padding: 5px 9px; border-radius: 99px; background: var(--raised); color: var(--muted); }
+.tchip.o-human { color: var(--gold); background: color-mix(in srgb, var(--gold) 15%, transparent); }
+.tchip.o-agent { color: var(--mint); background: color-mix(in srgb, var(--mint) 15%, transparent); }
+.tchip.o-external { color: var(--periwinkle); background: color-mix(in srgb, var(--periwinkle) 15%, transparent); }
+.tchip.urgent { color: var(--rose); background: color-mix(in srgb, var(--rose) 15%, transparent); }
+.tchip.g0 { color: var(--rose); background: color-mix(in srgb, var(--rose) 15%, transparent); }
+.tchip.g1 { color: var(--blue); background: color-mix(in srgb, var(--blue) 14%, transparent); }
+.tchip.g2 { color: var(--muted-2); }
+.tchip.later { color: var(--muted-2); }
+.copy-btn { margin-left: auto; font: 500 13px/1 var(--sans); padding: 7px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface-2); color: var(--bone); cursor: pointer; white-space: nowrap; }
+.copy-btn:hover { border-color: var(--tangerine); color: var(--tangerine); }
+.copy-btn.ok { border-color: var(--mint); color: var(--mint); }
+.toolbar .copy-btn { margin-left: 0; padding: 10px 16px; font-size: 14px; }
+.tchips .copy-btn { margin-left: auto; }
+
+@media (max-width: 1100px) {
+  .cols { grid-template-columns: 1fr; } .hero, .two { grid-template-columns: 1fr; } .stat-row { grid-template-columns: repeat(2, 1fr); } .hero-orbit { display: none; } }
+@media (max-width: 760px) {
+  .app, .app.inspecting { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .app.inspecting .inspector { position: fixed; inset: 0; z-index: 30; }
+  .top { padding: 14px 16px; } .view { padding: 16px; } .stat-row { grid-template-columns: 1fr 1fr; }
+  .hero-main h2 { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="brand"><b>&gt;_</b><div><span>журнал проекта</span><small id="brand-project"></small></div></div>
+    <nav class="nav" aria-label="Разделы">
+      <div class="nav-title">Пространство</div>
+      <button data-view="center" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Центр управления</button>
+      <div class="nav-title" style="margin-top:14px">Оркестрация</div>
+      <button data-view="universe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="19" cy="7" r="1.5" fill="currentColor"/></svg>Вселенная</button>
+      <button data-view="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Лента</button>
+      <button data-view="tasks" id="nav-tasks" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></svg>Задачи</button>
+    </nav>
+    <div class="side-foot"><strong>Локально</strong><span class="dot"></span><span id="foot-synced"></span></div>
+  </aside>
+
+  <main id="main">
+    <header class="top">
+      <div><div class="kicker" id="top-kicker">Пространство</div><h1 id="top-title">Центр управления</h1><span class="sub" id="top-sub"></span></div>
+      <div class="top-actions">
+        <span class="pill" id="fresh-pill" title="Когда страница собрана; вернувшись на вкладку через несколько минут, она перечитает себя"></span>
+        <span class="pill ok"><span class="dot"></span>только локально</span>
+        <button class="icon-btn" id="theme-btn" title="Светлая или тёмная тема" aria-label="Сменить тему"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      </div>
+    </header>
+
+    <section class="view active" id="view-center" aria-label="Центр управления">
+      <div class="hero">
+        <div class="card hero-main">
+          <div class="kicker">Центр управления · журнал проекта</div>
+          <h2 id="hero-title"></h2>
+          <p>Чаты Claude Code, Cowork и Codex и история коммитов — одна лента работы. Журнал только читает их и хранится на этом компьютере.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-go="universe">Открыть вселенную</button><button class="btn" data-go="feed">Лента по дням</button></div>
+          <svg class="hero-orbit" id="hero-orbit" viewBox="-150 -150 300 300" aria-hidden="true"></svg>
+        </div>
+        <div class="card">
+          <div class="kicker">Последнее</div>
+          <h3>Где остановились</h3>
+          <div class="hint">Самые свежие чаты и коммиты</div>
+          <div class="list" id="latest"></div>
+        </div>
+      </div>
+      <div class="card tasks-plate" id="center-tasks" hidden>
+        <div class="plate-text">
+          <div class="kicker">Задачи проекта · обновляются сами</div>
+          <h3>Список задач</h3>
+          <div class="tasks-summary" id="center-tasks-nums"></div>
+          <div class="hint" id="center-tasks-fresh"></div>
+        </div>
+        <button class="btn primary plate-go" data-go="tasks">Открыть список задач <span aria-hidden="true">→</span></button>
+      </div>
+      <div class="stat-row" id="stats"></div>
+      <div class="two">
+        <div class="card weeks">
+          <h3>Активность по неделям</h3>
+          <div class="hint">Сколько чатов шло и сколько коммитов сделано</div>
+          <div class="legend"><span><i style="background:var(--tangerine)"></i>чаты</span><span><i style="background:var(--cyan)"></i>коммиты</span></div>
+          <svg id="weeks" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="card">
+          <h3>Горячие области</h3>
+          <div class="hint">Где работали последние 14 дней — по числу чатов</div>
+          <div id="hot"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-universe" aria-label="Вселенная">
+      <div class="toolbar">
+        <div class="tabs" id="lens" role="group" aria-label="Кто работал">
+          <button data-agent="all" aria-pressed="true">Вся вселенная</button>
+          <button data-agent="claude" aria-pressed="false"><span class="agent claude" style="margin:0"></span>Claude Code</button>
+          <button data-agent="cowork" aria-pressed="false"><span class="agent cowork" style="margin:0"></span>Cowork</button>
+          <button data-agent="codex" aria-pressed="false"><span class="agent codex" style="margin:0"></span>Codex</button>
+        </div>
+        <div class="tabs" id="mode" role="group" aria-label="Вид">
+          <button data-mode="orbit" aria-pressed="true">Орбита</button>
+          <button data-mode="links" aria-pressed="false">Связи</button>
+        </div>
+        <div class="tabs" id="period" role="group" aria-label="Период">
+          <button data-days="0" aria-pressed="true">Всё время</button>
+          <button data-days="30" aria-pressed="false">30 дней</button>
+          <button data-days="7" aria-pressed="false">7 дней</button>
+        </div>
+        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="find" placeholder="Найти чат или область" autocomplete="off"></label>
+      </div>
+      <div class="meta-line" id="u-meta"></div>
+      <div class="stage">
+        <svg id="universe" aria-label="Вселенная проекта: в центре проект, на внутреннем кольце области кода, на внешнем чаты по времени"></svg>
+        <div class="corner"><button class="btn" id="fit">Показать всё</button></div>
+        <div class="note">Внешнее кольцо — чаты по времени, по часовой стрелке от старых к новым. Внутреннее — области проекта, где эти чаты меняли файлы; область стоит ближе к тем месяцам, когда над ней работали.</div>
+      </div>
+    </section>
+
+    <section class="view" id="view-tasks" aria-label="Задачи">
+      <div class="card fresh" id="t-fresh"></div>
+      <!-- The list comes first: the plate in the control centre opens this view to see the tasks. -->
+      <div class="toolbar" id="t-toolbar" style="margin-top:6px">
+        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="t-find" placeholder="Найти задачу, решение или переключатель" autocomplete="off"></label>
+      </div>
+      <div class="cols">
+        <div class="col c-focus"><h3>Фокус <span id="n-focus"></span></h3><div id="t-focus"></div></div>
+        <div class="col c-wait"><h3>Ждёт <span id="n-wait"></span></h3><div id="t-wait"></div></div>
+        <div class="col c-queue"><h3>Очередь <span id="n-queue"></span></h3><div id="t-queue"></div><button class="btn" id="t-queue-more">Показать всю очередь</button></div>
+      </div>
+      <div class="stat-row" id="t-live" style="margin-top:22px"></div>
+      <div class="sec-title" id="t-groups-title" hidden>Готовность по группам <span id="t-groups-note"></span></div>
+      <div class="blocks" id="t-groups" hidden></div>
+      <div class="sec-title" id="t-blocks-title" hidden>Готовность по блокам <span id="t-blocks-note"></span></div>
+      <div class="blocks" id="t-blocks" hidden></div>
+      <div class="two" style="margin-top:16px">
+        <div class="card" id="c-dec" hidden><h3>Решения <span class="muted mono" id="n-dec"></span></h3><div class="hint">Что решено и почему — новые сверху</div><div id="t-dec"></div></div>
+        <div class="card" id="c-table" hidden><h3 id="t-table-title">Таблица</h3><div class="hint" id="t-ord-stamp"></div><div class="kpis" id="t-ord-kpi"></div><div style="overflow:auto"><table class="ord" id="t-ord"></table></div></div>
+      </div>
+      <div class="two" style="margin-top:16px">
+        <div class="card" id="c-flags" hidden><h3>Переключатели</h3><div class="hint">Что сейчас включено и что это значит</div><div id="t-flags"></div></div>
+        <div class="card"><h3>Где что лежит</h3><div class="hint" id="t-src"></div><div id="t-docs"></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-feed" aria-label="Лента">
+      <div class="meta-line" id="f-meta"></div>
+      <div id="feed"></div>
+      <button class="btn" id="more" style="margin-top:8px">Показать ещё</button>
+    </section>
+  </main>
+
+  <aside class="inspector" id="inspector" aria-label="Подробности"></aside>
+</div>
+<div class="tooltip" id="tip" role="tooltip"></div>
+
+<script type="application/json" id="journal-data">/*__DATA__*/</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('journal-data').textContent);
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const NS = 'http://www.w3.org/2000/svg';
+  // Every text from a chat goes in through textContent: a chat may contain HTML of its own.
+  const el = (tag, attrs = {}, ...kids) => {
+    const n = tag.startsWith('svg:') ? document.createElementNS(NS, tag.slice(4)) : document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === 'text') n.textContent = v;
+      else if (k === 'on') for (const [ev, fn] of Object.entries(v)) n.addEventListener(ev, fn);
+      else if (k === 'class') n.setAttribute('class', v);
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    for (const k of kids.flat()) if (k != null) n.append(k instanceof Node ? k : document.createTextNode(String(k)));
+    return n;
+  };
+  const AGENT = { claude: 'Claude Code', cowork: 'Cowork', codex: 'Codex' };
+  const VIA = { cwd: 'работал в папке проекта', folder: 'папка выбрана в Cowork', edits: 'правил файлы проекта из другой папки', commits: 'коммитил в проект' };
+  const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const d = (ts) => new Date(ts);
+  const fmtDay = (ts) => { const x = d(ts); return `${x.getDate()} ${MONTHS[x.getMonth()]}`; };
+  const fmt = (ts) => { const x = d(ts); return `${fmtDay(ts)}, ${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`; };
+  const dayKey = (ts) => { const x = d(ts); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
+  const plural = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? b : c; };
+  const areaLabel = (i) => D.areas[i]?.label ?? '?';
+  const now = Date.now();
+
+  // ------------------------------------------------ theme
+  try { const t = localStorage.getItem('journal-theme'); if (t) document.documentElement.dataset.theme = t; else if (matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light'; } catch {}
+  $('#theme-btn').addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('journal-theme', next); } catch {}
+  });
+
+  // ------------------------------------------------ derived data
+  const chats = D.chats.map((c, i) => ({ ...c, i }));
+  const byId = new Map(chats.map((c) => [c.id, c]));
+  const areaChats = D.areas.map(() => []);
+  for (const c of chats) for (const [a, n] of c.areas) areaChats[a]?.push([c, n]);
+  const areaCommits = D.areas.map(() => []);
+  for (const cm of D.commits) for (const a of cm[3]) areaCommits[a]?.push(cm);
+
+  $('#brand-project').textContent = D.name;
+  $('#foot-synced').textContent = D.synced ? `обновлён ${fmt(D.synced)}` : 'ещё не обновлялся';
+  document.title = `${D.name} — журнал проекта`;
+
+  // ------------------------------------------------ navigation
+  const TITLES = { center: ['Пространство', 'Центр управления', 'Состояние проекта и последняя работа'], universe: ['Оркестрация', 'Вселенная', 'Чаты, области проекта и связи между ними'], feed: ['Оркестрация', 'Лента', 'Вся работа по дням'], tasks: ['Оркестрация', 'Задачи', 'Все задачи проекта — обновляются сами'] };
+  let drawn = { universe: false, feed: false, tasks: false };
+  const go = (name) => {
+    for (const b of $$('.nav button')) { if (b.dataset.view === name) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }
+    for (const v of $$('.view')) v.classList.toggle('active', v.id === 'view-' + name);
+    const [k, t, s] = TITLES[name];
+    $('#top-kicker').textContent = k; $('#top-title').textContent = t; $('#top-sub').textContent = s;
+    if (name === 'universe' && !drawn.universe) { drawUniverse(); drawn.universe = true; }
+    if (name === 'feed' && !drawn.feed) { renderFeed(); drawn.feed = true; }
+    if (name === 'tasks' && !drawn.tasks) { renderTasks(); drawn.tasks = true; }
+    try { history.replaceState(null, '', '#' + name); } catch {}
+  };
+  for (const b of $$('.nav button')) b.addEventListener('click', () => go(b.dataset.view));
+  for (const b of $$('[data-go]')) b.addEventListener('click', () => go(b.dataset.go));
+
+  // ------------------------------------------------ center
+  const first = chats[0]?.started, last = chats.at(-1)?.ended;
+  $('#hero-title').append(D.name, ' — ', el('em', { text: 'вся работа в одном поле зрения.' }));
+  $('#top-sub').textContent = TITLES.center[2];
+  const byAgent = {}; for (const c of chats) byAgent[c.agent] = (byAgent[c.agent] ?? 0) + 1;
+  const userTurns = chats.reduce((s, c) => s + (c.users || 0), 0);
+  const stats = [
+    ['Чатов', chats.length, Object.entries(byAgent).map(([a, n]) => `${AGENT[a] ?? a} ${n}`).join(' · ')],
+    ['Ваших реплик', userTurns, 'в этих чатах'],
+    ['Коммитов', D.commits.length, D.commits.length ? `последний ${fmtDay(D.commits.at(-1)[1])}` : ''],
+    ['Первый чат', first ? fmtDay(first) : '—', first ? `история с ${d(first).getFullYear()} года` : ''],
+  ];
+  for (const [label, value, note] of stats) $('#stats').append(el('div', { class: 'card stat' }, el('div', { class: 'label', text: label }), el('div', { class: 'value', text: String(value) }), el('div', { class: 'note', text: note })));
+
+  const chatRow = (c, extra) => el('button', { class: 'row', on: { click: () => inspectChat(c) } },
+    el('span', { class: `agent ${c.agent}`, title: AGENT[c.agent] }),
+    el('span', { class: 't' }, el('b', { text: c.title || '(без названия)' }), el('small', { text: `${fmt(c.ended)} · ${AGENT[c.agent] ?? c.agent}${extra ? ' · ' + extra : ''}` })));
+  const latest = [...chats].sort((a, b) => b.ended.localeCompare(a.ended)).slice(0, 6);
+  for (const c of latest) $('#latest').append(chatRow(c, c.commits.length ? `${c.commits.length} ${plural(c.commits.length, 'коммит', 'коммита', 'коммитов')}` : ''));
+
+  // weeks
+  (() => {
+    const svg = $('#weeks');
+    const weekOf = (ts) => { const x = d(ts); const day = (x.getDay() + 6) % 7; x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - day); return x.getTime(); };
+    const weeks = new Map();
+    const bump = (ts, k) => { const w = weekOf(ts); const e = weeks.get(w) ?? { c: 0, g: 0 }; e[k]++; weeks.set(w, e); };
+    for (const c of chats) bump(c.started, 'c');
+    for (const cm of D.commits) bump(cm[1], 'g');
+    const keys = [...weeks.keys()].sort((a, b) => a - b);
+    if (!keys.length) return;
+    const all = []; for (let w = keys[0]; w <= keys.at(-1); w += 7 * 864e5) all.push(w);
+    const W = 600, H = 170, pad = 18, bw = (W - pad) / all.length;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const maxC = Math.max(1, ...all.map((w) => weeks.get(w)?.c ?? 0)), maxG = Math.max(1, ...all.map((w) => weeks.get(w)?.g ?? 0));
+    const half = (H - 30) / 2;
+    all.forEach((w, i) => {
+      const e = weeks.get(w) ?? { c: 0, g: 0 };
+      const x = pad + i * bw, hc = (e.c / maxC) * (half - 6), hg = (e.g / maxG) * (half - 6);
+      svg.append(el('svg:rect', { x: x + 1, y: half - hc, width: Math.max(1, bw - 2), height: hc, rx: 2, fill: 'var(--tangerine)' }, el('svg:title', { text: `неделя с ${fmtDay(w)}: чатов ${e.c}` })));
+      svg.append(el('svg:rect', { x: x + 1, y: half + 6, width: Math.max(1, bw - 2), height: hg, rx: 2, fill: 'var(--cyan)', opacity: .8 }, el('svg:title', { text: `неделя с ${fmtDay(w)}: коммитов ${e.g}` })));
+      const dt = d(w);
+      if (i === 0 || dt.getDate() <= 7) svg.append(el('svg:text', { x, y: H - 4, class: 'tick', text: MONTHS[dt.getMonth()] }));
+    });
+  })();
+
+  // hot areas
+  (() => {
+    const since = now - 14 * 864e5;
+    const hot = D.areas.map((a, i) => ({ i, n: areaChats[i].filter(([c]) => d(c.ended).getTime() >= since).length })).filter((x) => x.n).sort((a, b) => b.n - a.n).slice(0, 9);
+    const max = Math.max(1, ...hot.map((h) => h.n));
+    if (!hot.length) $('#hot').append(el('div', { class: 'muted', text: 'За 14 дней чатов не было.' }));
+    for (const h of hot) $('#hot').append(el('div', { class: 'bar-line', role: 'button', tabindex: 0, on: { click: () => inspectArea(h.i), keydown: (e) => e.key === 'Enter' && inspectArea(h.i) } },
+      el('div', {}, el('div', { class: 'name', text: D.areas[h.i].key || areaLabel(h.i), title: D.areas[h.i].key }), el('div', { class: 'track' }, el('div', { class: 'fill', style: `width:${(h.n / max) * 100}%` }))),
+      el('div', { class: 'num', text: String(h.n) })));
+  })();
+
+  // hero orbit decoration: real agents, real proportions
+  (() => {
+    const svg = $('#hero-orbit');
+    for (const r of [44, 88, 132]) svg.append(el('svg:circle', { r, class: 'ring' }));
+    svg.append(el('svg:circle', { r: 20, fill: 'var(--carbon)', stroke: 'var(--tangerine)', 'stroke-opacity': .6 }));
+    svg.append(el('svg:text', { y: 4, class: 'center-sub', text: 'hub' }));
+    const sample = chats.filter((_, i) => i % Math.max(1, Math.round(chats.length / 14)) === 0).slice(0, 14);
+    sample.forEach((c, i) => {
+      const r = [88, 132][i % 2], a = (i / sample.length) * Math.PI * 2 - Math.PI / 2;
+      svg.append(el('svg:circle', { cx: Math.cos(a) * r, cy: Math.sin(a) * r, r: 3.5, fill: c.agent === 'cowork' ? 'var(--periwinkle)' : c.agent === 'codex' ? 'var(--cyan)' : 'var(--tangerine)' }));
+    });
+  })();
+
+  // ------------------------------------------------ universe
+  const R_AREA = 240, R_CHAT = 440;
+  const uState = { agent: 'all', days: 0, query: '', selected: null, view: { x: -560, y: -560, w: 1120, h: 1120 } };
+  const pos = { chats: [], areas: [] };
+  const tip = $('#tip');
+  const showTip = (e, title, sub) => { tip.replaceChildren(el('b', { text: title }), el('small', { text: sub })); tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - 360, e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; };
+  const hideTip = () => { tip.style.display = 'none'; };
+
+  function layout() {
+    const n = chats.length;
+    chats.forEach((c, i) => { const a = -Math.PI / 2 + (i + .5) / n * Math.PI * 2; pos.chats[i] = { a, x: Math.cos(a) * R_CHAT, y: Math.sin(a) * R_CHAT }; });
+    // Areas go round the inner ring in the order they were worked on (mean position of their chats
+    // in time), evenly spaced: placing them at that mean angle piled most of them into one corner,
+    // because most areas were worked on throughout the same busy months.
+    const raw = D.areas.map((_, i) => {
+      let s = 0, w = 0;
+      for (const [c, k] of areaChats[i]) { s += c.i * k; w += k; }
+      return { i, t: w ? s / w : 0, w };
+    }).filter((x) => x.w > 0).sort((p, q) => p.t - q.t);
+    const maxW = Math.max(1, ...raw.map((r) => areaChats[r.i].length));
+    raw.forEach((r, k) => {
+      const a = -Math.PI / 2 + (k + .5) / raw.length * Math.PI * 2;
+      pos.areas[r.i] = { a, x: Math.cos(a) * R_AREA, y: Math.sin(a) * R_AREA, r: 5 + 13 * Math.sqrt(areaChats[r.i].length / maxW) };
+    });
+  }
+
+  const visibleChat = (c) => (uState.agent === 'all' || c.agent === uState.agent) && (!uState.days || d(c.ended).getTime() >= now - uState.days * 864e5);
+  const matches = (text) => !uState.query || String(text).toLowerCase().includes(uState.query);
+
+  function drawUniverse() {
+    layout();
+    const svg = $('#universe');
+    svg.replaceChildren();
+    const root = el('svg:g', { id: 'u-root' });
+    svg.append(root);
+    root.append(el('svg:circle', { r: R_AREA, class: 'ring' }), el('svg:circle', { r: R_CHAT, class: 'ring dash' }), el('svg:circle', { r: 120, class: 'ring dash' }));
+    // month marks on the outer ring
+    let lastMonth = -1;
+    chats.forEach((c, i) => {
+      const m = d(c.started).getMonth();
+      if (m === lastMonth) return;
+      lastMonth = m;
+      const a = pos.chats[i].a, r = R_CHAT + 34;
+      root.append(el('svg:line', { x1: Math.cos(a) * (R_CHAT + 10), y1: Math.sin(a) * (R_CHAT + 10), x2: Math.cos(a) * (R_CHAT + 22), y2: Math.sin(a) * (R_CHAT + 22), stroke: 'var(--muted-2)' }));
+      root.append(el('svg:text', { x: Math.cos(a) * r, y: Math.sin(a) * r + 4, class: 'tick', 'text-anchor': 'middle', text: `${MONTHS[m]} ${d(c.started).getFullYear()}` }));
+    });
+    const edges = el('svg:g', { id: 'u-edges' });
+    root.append(edges);
+    for (const c of chats) for (const [a] of c.areas) {
+      const p = pos.chats[c.i], q = pos.areas[a];
+      if (!q) continue;
+      edges.append(el('svg:path', { class: 'edge', d: `M${p.x},${p.y} Q${p.x * .45},${p.y * .45} ${q.x},${q.y}`, 'data-c': c.i, 'data-a': a }));
+    }
+    const center = el('svg:g', { class: 'node', on: { click: () => closeInspector() } },
+      el('svg:circle', { r: 46, fill: 'var(--carbon)', stroke: 'var(--tangerine)', 'stroke-opacity': .7 }),
+      el('svg:text', { class: 'center-label', y: -2, text: D.name.length > 18 ? D.name.slice(0, 17) + '…' : D.name }),
+      el('svg:text', { class: 'center-sub', y: 14, text: `${chats.length} ${plural(chats.length, 'чат', 'чата', 'чатов')}` }));
+    root.append(center);
+    const areasG = el('svg:g');
+    root.append(areasG);
+    D.areas.forEach((area, i) => {
+      const p = pos.areas[i];
+      if (!p) return;
+      // Labels point outwards, into the free band between the two rings.
+      const right = Math.cos(p.a) >= 0;
+      const lx = Math.cos(p.a) * (R_AREA + p.r + 8), ly = Math.sin(p.a) * (R_AREA + p.r + 8) + 4;
+      const g = el('svg:g', { class: 'node', 'data-area': i, tabindex: 0, role: 'button', 'aria-label': `Область ${area.key || area.label}` ,
+        on: { click: () => inspectArea(i), keydown: (e) => e.key === 'Enter' && inspectArea(i), mousemove: (e) => showTip(e, area.key || area.label, `${areaChats[i].length} ${plural(areaChats[i].length, 'чат', 'чата', 'чатов')} · ${areaCommits[i].length} ${plural(areaCommits[i].length, 'коммит', 'коммита', 'коммитов')}`), mouseleave: hideTip, mouseenter: () => highlight({ area: i }), } },
+        el('svg:circle', { cx: p.x, cy: p.y, r: p.r, fill: 'var(--mint)' }),
+        el('svg:text', { class: 'area-label', x: lx, y: ly, 'text-anchor': right ? 'start' : 'end', text: area.label }));
+      g.addEventListener('mouseleave', () => highlight(uState.selected));
+      areasG.append(g);
+    });
+    const chatsG = el('svg:g');
+    root.append(chatsG);
+    const maxU = Math.max(1, ...chats.map((c) => c.users || 0));
+    for (const c of chats) {
+      const p = pos.chats[c.i];
+      const color = c.agent === 'cowork' ? 'var(--periwinkle)' : c.agent === 'codex' ? 'var(--cyan)' : 'var(--tangerine)';
+      const g = el('svg:g', { class: 'node', 'data-chat': c.i, tabindex: 0, role: 'button', 'aria-label': `Чат ${c.title}`,
+        on: { click: () => inspectChat(c), keydown: (e) => e.key === 'Enter' && inspectChat(c), mousemove: (e) => showTip(e, c.title || '(без названия)', `${fmt(c.started)} · ${AGENT[c.agent] ?? c.agent} · ${c.users || 0} ${plural(c.users || 0, 'реплика', 'реплики', 'реплик')} · ${c.commits.length} комм.`), mouseleave: hideTip, mouseenter: () => highlight({ chat: c.i }) } },
+        el('svg:circle', { cx: p.x, cy: p.y, r: 3.5 + 6 * Math.sqrt((c.users || 0) / maxU), fill: color }));
+      g.addEventListener('mouseleave', () => highlight(uState.selected));
+      chatsG.append(g);
+    }
+    applyView();
+    applyFilters();
+    enablePanZoom(svg);
+  }
+
+  function highlight(sel) {
+    const svg = $('#universe');
+    if (!svg.firstChild) return;
+    const hotChats = new Set(), hotAreas = new Set();
+    if (sel?.chat != null) { hotChats.add(sel.chat); for (const [a] of chats[sel.chat].areas) hotAreas.add(a); }
+    if (sel?.area != null) { hotAreas.add(sel.area); for (const [c] of areaChats[sel.area]) hotChats.add(c.i); }
+    for (const e of $$('#u-edges path', svg)) {
+      const on = sel && hotChats.has(+e.dataset.c) && hotAreas.has(+e.dataset.a) && (sel.chat == null || +e.dataset.c === sel.chat) && (sel.area == null || +e.dataset.a === sel.area);
+      e.classList.toggle('hot', !!on);
+    }
+    for (const g of $$('[data-chat]', svg)) g.classList.toggle('sel', !!sel && hotChats.has(+g.dataset.chat) && (sel.chat === +g.dataset.chat));
+    for (const g of $$('[data-area]', svg)) g.classList.toggle('sel', !!sel && sel.area === +g.dataset.area);
+  }
+
+  function applyFilters() {
+    const svg = $('#universe');
+    let shown = 0;
+    const visAreas = new Set();
+    for (const g of $$('[data-chat]', svg)) {
+      const c = chats[+g.dataset.chat];
+      const ok = visibleChat(c) && (matches(c.title) || matches(c.first) || c.areas.some(([a]) => matches(D.areas[a].key)));
+      g.classList.toggle('dim', !ok);
+      if (ok) { shown++; for (const [a] of c.areas) visAreas.add(a); }
+    }
+    for (const g of $$('[data-area]', svg)) {
+      const i = +g.dataset.area;
+      const ok = uState.query ? matches(D.areas[i].key) || visAreas.has(i) : visAreas.has(i);
+      g.classList.toggle('dim', !ok);
+    }
+    for (const e of $$('#u-edges path', svg)) {
+      const c = chats[+e.dataset.c];
+      e.style.display = visibleChat(c) && !svg.querySelector(`[data-chat="${c.i}"]`).classList.contains('dim') ? '' : 'none';
+    }
+    $('#u-meta').replaceChildren(el('span', { class: 'ok', text: '● проверенный срез журнала' }), el('span', { text: `видно ${shown} из ${chats.length} чатов` }), el('span', { text: `областей ${D.areas.length}` }), el('span', { text: D.synced ? `обновлён ${fmt(D.synced)}` : '' }));
+  }
+
+  function applyView() { const v = uState.view; $('#universe').setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`); }
+  function enablePanZoom(svg) {
+    if (svg.dataset.pz) return;
+    svg.dataset.pz = '1';
+    let drag = null;
+    svg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = svg.getBoundingClientRect(), v = uState.view;
+      const scale = Math.max(.25, Math.min(2.5, e.deltaY > 0 ? 1.12 : 1 / 1.12));
+      const w = Math.max(250, Math.min(2400, v.w * scale)), h = w * (v.h / v.w);
+      const fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+      uState.view = { x: v.x + (v.w - w) * fx, y: v.y + (v.h - h) * fy, w, h };
+      applyView();
+    }, { passive: false });
+    svg.addEventListener('pointerdown', (e) => { if (e.target.closest('.node')) return; drag = { x: e.clientX, y: e.clientY, v: { ...uState.view } }; svg.classList.add('dragging'); svg.setPointerCapture(e.pointerId); });
+    svg.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const r = svg.getBoundingClientRect();
+      const k = Math.max(drag.v.w / r.width, drag.v.h / r.height);
+      uState.view = { ...drag.v, x: drag.v.x - (e.clientX - drag.x) * k, y: drag.v.y - (e.clientY - drag.y) * k };
+      applyView();
+    });
+    const end = () => { drag = null; svg.classList.remove('dragging'); };
+    svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+  }
+  $('#fit').addEventListener('click', () => { uState.view = { x: -560, y: -560, w: 1120, h: 1120 }; applyView(); });
+  for (const b of $$('#lens button')) b.addEventListener('click', () => { uState.agent = b.dataset.agent; for (const x of $$('#lens button')) x.setAttribute('aria-pressed', x === b); applyFilters(); });
+  for (const b of $$('#mode button')) b.addEventListener('click', () => { $('#universe').classList.toggle('links', b.dataset.mode === 'links'); for (const x of $$('#mode button')) x.setAttribute('aria-pressed', x === b); });
+  for (const b of $$('#period button')) b.addEventListener('click', () => { uState.days = +b.dataset.days; for (const x of $$('#period button')) x.setAttribute('aria-pressed', x === b); applyFilters(); });
+  $('#find').addEventListener('input', (e) => { uState.query = e.target.value.trim().toLowerCase(); applyFilters(); });
+
+  // ------------------------------------------------ feed
+  let feedShown = 0;
+  const days = (() => {
+    const m = new Map();
+    const at = (k) => m.get(k) ?? (m.set(k, { chats: [], commits: [] }), m.get(k));
+    for (const c of chats) at(dayKey(c.started)).chats.push(c);
+    for (const cm of D.commits) at(dayKey(cm[1])).commits.push(cm);
+    return [...m].sort((a, b) => b[0].localeCompare(a[0]));
+  })();
+  const WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  function renderFeed() {
+    const box = $('#feed');
+    const batch = days.slice(feedShown, feedShown + 20);
+    for (const [key, v] of batch) {
+      const dt = new Date(key + 'T12:00:00');
+      const day = el('div', { class: 'day' },
+        el('div', { class: 'day-head' }, el('b', { text: `${WEEKDAYS[dt.getDay()]}, ${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}` }),
+          el('span', { text: `${v.chats.length} ${plural(v.chats.length, 'чат', 'чата', 'чатов')} · ${v.commits.length} ${plural(v.commits.length, 'коммит', 'коммита', 'коммитов')}` })));
+      for (const c of v.chats.sort((a, b) => a.started.localeCompare(b.started))) {
+        day.append(el('button', { class: 'row feed-chat', on: { click: () => inspectChat(c) } },
+          el('span', { class: `agent ${c.agent}` }),
+          el('span', { class: 't' }, el('b', { text: c.title || '(без названия)' }),
+            el('small', { text: `${fmt(c.started)} · ${AGENT[c.agent] ?? c.agent} · ${c.areas.slice(0, 3).map(([a]) => areaLabel(a)).join(', ') || 'без правок файлов'}` }),
+            c.first ? el('small', { class: 'first', text: '«' + c.first.slice(0, 220) + (c.first.length > 220 ? '…' : '') + '»' }) : null)));
+      }
+      if (v.commits.length) {
+        const det = el('details', { class: 'day-commits' }, el('summary', { text: `коммиты дня (${v.commits.length})` }));
+        const ul = el('ul', { class: 'commits' });
+        for (const cm of v.commits.slice().reverse().slice(0, 60)) ul.append(el('li', {}, el('code', { text: cm[0] }), cm[2]));
+        det.append(ul);
+        day.append(det);
+      }
+      box.append(day);
+    }
+    feedShown += batch.length;
+    $('#more').style.display = feedShown < days.length ? '' : 'none';
+    $('#f-meta').replaceChildren(el('span', { text: `дней с работой: ${days.length}` }), el('span', { text: `показано: ${feedShown}` }));
+  }
+  $('#more').addEventListener('click', renderFeed);
+
+  // ------------------------------------------------ tasks and the project's dashboard
+  const T = D.tasks && !D.tasks.error ? D.tasks : null;
+  const C = T?.data ?? {};
+  // Dashboard texts carry a little markup (<i>, <b>) and escaped entities; only that markup is honoured,
+  // everything else is shown as text.
+  const decode = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+  const rich = (text) => {
+    const frag = document.createDocumentFragment();
+    let target = frag;
+    for (const part of String(text ?? '').split(/(<\/?[ib]>)/)) {
+      if (/^<[ib]>$/.test(part)) { const n = document.createElement(part[1] === 'i' ? 'em' : 'strong'); target.append(n); target = n; }
+      else if (/^<\/[ib]>$/.test(part)) target = frag;
+      else if (part) target.append(document.createTextNode(decode(part)));
+    }
+    return frag;
+  };
+  const plain = (text) => decode(String(text ?? '').replace(/<\/?[ib]>/g, ''));
+  const ago = (ts) => { const h = Math.round((now - d(ts).getTime()) / 36e5); return h < 1 ? 'меньше часа назад' : h < 48 ? `${h} ${plural(h, 'час', 'часа', 'часов')} назад` : `${Math.round(h / 24)} ${plural(Math.round(h / 24), 'день', 'дня', 'дней')} назад`; };
+
+  // Tasks kept as files (in the default branch, plus what other branches took or closed). When the
+  // project has them, the three columns come from there and never go stale; the dashboard keeps the rest.
+  // Field values arrive in neutral words; the project's profile may name owners, groups and areas.
+  const F = T?.files ?? null;
+  const LABELS = F?.labels ?? {};
+  const OWNER = { agent: 'агент', human: 'человек', external: 'снаружи', ...(LABELS.owner ?? {}) };
+  const STATUS = { in_progress: 'в работе', now: 'сейчас', waiting: 'ждёт', next: 'следом', later: 'потом', done: 'закрыта' };
+  const PRIO = { high: 0, medium: 1, low: 2 };
+  const AREA = LABELS.area ?? {};
+  // The profile's group order says which group comes first; the first three get their own colour.
+  const GROUPS = F?.groupOrder ?? [];
+  const groupLabel = (g) => (g ? String(LABELS.group?.[g] ?? g) : null);
+  const groupClass = (g) => { const i = GROUPS.indexOf(g); return i >= 0 && i < 3 ? `g${i}` : ''; };
+  const groupRank = (t) => { const i = GROUPS.indexOf(t.group); return i < 0 ? GROUPS.length : i; };
+  const W = F?.words ?? { status: 'status', session: 'session', closed: 'closed', inProgress: 'in_progress', done: 'done' };
+  const fileOpen = F ? F.tasks.filter((t) => t.status !== 'done') : [];
+  const fileSort = (list) => [...list].sort((a, b) => (a.taken ? 0 : 1) - (b.taken ? 0 : 1) || (PRIO[a.priority] ?? 3) - (PRIO[b.priority] ?? 3) || groupRank(a) - groupRank(b) || (a.status === 'next' ? 0 : 1) - (b.status === 'next' ? 0 : 1));
+  const fileCols = F ? {
+    focus: fileSort(fileOpen.filter((t) => t.status === 'now' || t.status === 'in_progress')),
+    wait: fileSort(fileOpen.filter((t) => t.status === 'waiting')),
+    queue: fileSort(fileOpen.filter((t) => t.status === 'next' || t.status === 'later')),
+  } : null;
+  // Open tasks per group, when the tasks carry one, in the profile's order.
+  const groupCounts = (() => {
+    const n = new Map();
+    for (const t of fileOpen) if (t.group) n.set(t.group, (n.get(t.group) ?? 0) + 1);
+    const rank = (g) => { const i = GROUPS.indexOf(g); return i < 0 ? GROUPS.length : i; };
+    const keys = [...n.keys()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+    return keys.length ? keys.map((g) => `${groupLabel(g).toLowerCase()} ${n.get(g)}`).join(' · ') : null;
+  })();
+
+  if (T) {
+    $('#nav-tasks').hidden = false;
+    $('#center-tasks').hidden = false;
+    const nums = F
+      ? [[F.counts.focus, 'в фокусе'], [F.counts.waiting, 'ждёт'], [F.counts.queue, 'в очереди'], [F.counts.taken, 'в работе у чатов']]
+      : [[C.focus?.length ?? 0, 'в фокусе'], [C.waiting?.length ?? 0, 'ждёт'], [C.queue?.length ?? 0, 'в очереди']];
+    for (const [n, label] of nums) $('#center-tasks-nums').append(el('div', {}, el('b', { text: String(n) }), el('small', { text: label })));
+    const behind = T.sinceCommits.length + T.sinceChats.length;
+    $('#center-tasks-fresh').textContent = F
+      ? `Задачи — файлы ${F.dir}/ в ${F.ref} (${F.head}), читаются при каждом открытии. Свободных для агента ${F.counts.free}, на стороне «${OWNER.human}» ${F.counts.human}.` + (T.since ? ` Остальное — из панели проекта, она обновлена ${ago(T.since)}.` : '')
+      : `Панель проекта обновлена ${fmt(T.since)} (${ago(T.since)}).` + (behind ? ` После этого — ${T.sinceCommits.length} ${plural(T.sinceCommits.length, 'коммит', 'коммита', 'коммитов')} и ${T.sinceChats.length} ${plural(T.sinceChats.length, 'чат', 'чата', 'чатов')}: что именно — в «Задачах».` : ' После этого ничего не менялось.');
+  } else if (D.tasks?.error) {
+    $('#center-tasks').hidden = false;
+    $('#center-tasks-fresh').textContent = 'Задачи или панель проекта не удалось прочитать: ' + D.tasks.error;
+  }
+
+  // A card from the dashboard file: {t: title, d: text, f: where, id, pri, wait, c: 'stop' when it blocks}.
+  function taskCard(t, kind) {
+    const card = el('div', { class: `task ${kind === 'wait' ? (t.c === 'stop' ? 'stop' : 'warn') : kind === 'focus' ? 'focus' : ''}`, tabindex: 0, role: 'button', 'data-find': plain(`${t.t} ${t.d} ${t.wait ?? ''}`).toLowerCase() });
+    card.append(el('div', { class: 'tt' }, rich(t.t)));
+    const meta = [t.pri ? `приоритет: ${t.pri}` : null, t.wait ?? null, t.c === 'stop' ? 'блокирует' : null, t.id ? `ключ ${t.id}` : null].filter(Boolean);
+    if (meta.length) card.append(el('div', { class: 'tm', text: meta.join(' · ') }));
+    const body = el('div', { class: 'td' }, rich(t.d));
+    if (t.f) body.append(el('div', { class: 'tm', text: 'где: ' + plain(t.f) }));
+    card.append(body);
+    const toggle = () => card.classList.toggle('open');
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', (e) => e.key === 'Enter' && toggle());
+    return card;
+  }
+
+  // Copying a task for a new chat. A file page may lack the async clipboard; the old textarea route
+  // then still works.
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const a = el('textarea', { style: 'position:fixed;opacity:0;top:0;left:0' }); a.value = text; document.body.append(a); a.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch {}
+    a.remove(); return ok;
+  }
+  function copyButton(label, textOf) {
+    const b = el('button', { class: 'copy-btn', type: 'button', title: 'Текст для нового чата — в буфер обмена', text: label });
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const ok = await copyText(textOf());
+      b.textContent = ok ? 'Скопировано ✓' : 'Не скопировалось'; b.classList.toggle('ok', ok);
+      setTimeout(() => { b.textContent = label; b.classList.remove('ok'); }, 1800);
+    });
+    b.addEventListener('keydown', (e) => e.stopPropagation());
+    return b;
+  }
+  const howToTake = () => `Как брать задачу: в своей ветке ${W.status}: ${W.inProgress} и ${W.session}: <имя чата> в файле задачи, сразу коммит; закрыть там же, где исправление (${W.status}: ${W.done}, ${W.closed}: <дата> <коммит>).` + (F.readme ? ` Правила проекта — ${F.readme}.` : '');
+  const taskPrompt = (t) => [
+    `Продолжи работу над ${D.name} (${D.project}).`, '',
+    `ЗАДАЧА: ${t.title}`,
+    `КЛЮЧ: ${t.key} — файл ${F.dir}/${t.key}.md`,
+    t.group ? `ГРУППА: ${groupLabel(t.group)}` : null,
+    `ЧТО СДЕЛАТЬ: ${t.description}`,
+    t.check ? `ПРОВЕРИТЬ: ${t.check}` : null,
+    t.source ? `ИСТОЧНИК: ${t.source}` : null,
+    t.taken ? `УЖЕ В РАБОТЕ: чат «${t.taken.session || 'без имени'}», ветка ${t.taken.branch} — сначала спроси его, чтобы не делать второй раз.` : null,
+    t.closedIn ? `УЖЕ ЗАКРЫТА в ветке ${t.closedIn.branch} — проверь, не ждёт ли она только слияния.` : null,
+    '',
+    howToTake(),
+    'Цифры в задаче — снимок на момент её постановки: сначала пересчитай по факту.',
+  ].filter((x) => x !== null).join('\n');
+  const listPrompt = () => {
+    const line = (t) => `- [${t.key}] ${t.title} (${[t.owner ? OWNER[t.owner] ?? t.owner : null, groupLabel(t.group)?.toLowerCase() ?? (t.priority === 'high' ? 'срочно' : null), t.taken ? 'в работе: ' + (t.taken.session || t.taken.branch) : null].filter(Boolean).join(', ')})`;
+    return [`Задачи ${D.name} на ${fmt(new Date().toISOString())} (${F.ref} ${F.head}): в фокусе ${fileCols.focus.length}, ждёт ${fileCols.wait.length}, в очереди ${fileCols.queue.length}.`, '',
+      'В ФОКУСЕ:', ...fileCols.focus.map(line), '', 'ЖДЁТ:', ...fileCols.wait.map(line), '', 'В ОЧЕРЕДИ:', ...fileCols.queue.map(line), '',
+      `Каждая задача — файл ${F.dir}/<ключ>.md.` + (GROUPS.length ? ` Сначала — группа «${groupLabel(GROUPS[0])}».` : '') + ' Что предлагаешь взять следующим и почему?'].join('\n');
+  };
+
+  // A task file: plain text only (the files are Markdown written by chats, nothing in them is markup).
+  function fileTaskCard(t, kind) {
+    const cls = t.taken ? 'taken' : kind === 'wait' ? (t.priority === 'high' ? 'stop' : 'warn') : kind === 'focus' ? 'focus' : '';
+    const card = el('div', { class: `task ${cls}`, tabindex: 0, role: 'button', 'data-find': `${t.key} ${t.title} ${t.description} ${t.check} ${t.taken?.session ?? ''} ${t.taken?.branch ?? ''}`.toLowerCase() });
+    card.append(el('div', { class: 'tt', text: t.title }));
+    card.append(el('div', { class: 'tchips' },
+      t.owner ? el('span', { class: `tchip o-${t.owner}`, text: OWNER[t.owner] ?? t.owner }) : null,
+      t.group ? el('span', { class: `tchip ${groupClass(t.group)}`, text: groupLabel(t.group) }) : t.priority === 'high' ? el('span', { class: 'tchip urgent', text: 'срочно' }) : null,
+      kind === 'queue' && t.status === 'later' ? el('span', { class: 'tchip later', text: 'потом' }) : null,
+      t.area ? el('span', { class: 'tchip', text: AREA[t.area] ?? t.area }) : null,
+      copyButton('Скопировать задачу', () => taskPrompt(t))));
+    if (t.taken) card.append(el('div', { class: 'badge', text: `в работе: ${t.taken.session || 'чат без имени'} · ${t.taken.branch}${t.taken.since ? ' · ' + ago(t.taken.since) : ''}` }));
+    if (t.closedIn) card.append(el('div', { class: 'badge done', text: `закрыта в ветке ${t.closedIn.branch}${t.closedIn.closed ? ' (' + t.closedIn.closed + ')' : ''} — ждёт слияния` }));
+    const body = el('div', { class: 'td' }, t.description);
+    if (t.check) body.append(el('div', {}, el('em', { text: 'Проверить: ' + t.check })));
+    body.append(el('div', { class: 'tm', text: `ключ ${t.key} · ${F.dir}/${t.key}.md${t.source ? ' · источник: ' + t.source : ''}${t.created ? ' · с ' + t.created : ''}` }));
+    card.append(body);
+    const toggle = () => card.classList.toggle('open');
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', (e) => e.key === 'Enter' && toggle());
+    return card;
+  }
+
+  let queueAll = false;
+  function renderTasks() {
+    if (!T) return;
+    // freshness: the task files are always current; what can go stale is the dashboard behind the rest
+    const stale = T.sinceCommits.length + T.sinceChats.length > 0;
+    const fresh = $('#t-fresh');
+    fresh.classList.toggle('stale', !F && stale);
+    fresh.classList.toggle('ok', !!F || !stale);
+    const counted = () => el('span', {}, el('b', { text: `${T.sinceCommits.length} ${plural(T.sinceCommits.length, 'коммит', 'коммита', 'коммитов')}` }), ' и ', el('b', { text: `${T.sinceChats.length} ${plural(T.sinceChats.length, 'чат', 'чата', 'чатов')}` }));
+    const dashboardLine = T.since ? el('div', { class: 'since' }, F ? 'Блоки, решения и остальное ниже — из панели проекта, она обновлена ' : `Обновлена ${fmt(T.since)} — `, F ? el('span', { text: `${fmt(T.since)} (${ago(T.since)})` }) : null,
+      stale ? el('span', {}, F ? '. После этого: ' : 'после этого: ', counted(), ' — этого в панели ещё нет.') : el('b', { text: F ? '. После этого ничего не менялось.' : 'После обновления панели ничего не менялось.' })) : null;
+    const left = F
+      ? el('div', {},
+        el('div', { class: 'kicker', text: `Задачи · файлы ${F.dir}/ в ${F.ref} и в ветках · читаются при каждом открытии` }),
+        el('h2', { text: `Открыто ${F.counts.open}: в работе у чатов ${F.counts.taken}, свободных для агента ${F.counts.free}` }),
+        el('div', { class: 'muted mono', text: `${F.ref} ${F.head} · на стороне «${OWNER.human}» ${F.counts.human}${groupCounts ? ` · по группам: ${groupCounts}` : ''}${F.counts.closedInBranches ? ` · закрыто в ветках, ждёт слияния: ${F.counts.closedInBranches}` : ''}${F.newInBranches.length ? ` · новых в ветках: ${F.newInBranches.length}` : ''}` }),
+        dashboardLine)
+      : el('div', {},
+        el('div', { class: 'kicker', text: 'Панель проекта · читается при каждом открытии' }),
+        el('h2', { text: `Обновлена ${fmt(T.since)} — ${ago(T.since)}` }),
+        T.committed ? el('div', { class: 'muted mono', text: `коммит ${T.committed.hash} · ${T.committed.subject}` }) : null,
+        el('div', { class: 'since' }, stale ? el('span', {}, 'После этого: ', counted(), ' — этого в панели ещё нет.') : el('b', { text: 'После обновления панели ничего не менялось.' })));
+    if (F?.newInBranches.length) {
+      const det = el('details', {}, el('summary', { text: `новые задачи в ветках (${F.newInBranches.length})` }));
+      det.append(el('ul', { class: 'commits' }, ...F.newInBranches.map((b) => el('li', {}, el('code', { text: b.key }), `${b.title} · ${b.branch} · ${STATUS[b.status] ?? b.status}`))));
+      left.append(det);
+    }
+    if (T.sinceChats.length) {
+      const det = el('details', { open: !F }, el('summary', { text: `чаты после обновления панели (${T.sinceChats.length})` }));
+      const list = el('div', { class: 'list' });
+      for (const c of T.sinceChats) { const full = byId.get(c.id); list.append(full ? chatRow(full, `${c.turns || 0} ${plural(c.turns || 0, 'реплика', 'реплики', 'реплик')} после`) : el('div', { class: 'row', text: c.title })); }
+      det.append(list);
+      left.append(det);
+    }
+    if (T.sinceCommits.length) {
+      const det = el('details', {}, el('summary', { text: `коммиты после обновления панели (${T.sinceCommits.length})` }));
+      det.append(el('ul', { class: 'commits' }, ...T.sinceCommits.slice(0, 80).map(([h, ts, s]) => el('li', {}, el('code', { text: h }), `${fmt(ts)} · ${s}`))));
+      left.append(det);
+    }
+    fresh.replaceChildren(left, T.file ? el('a', { class: 'btn', href: 'file:///' + T.file.replace(/\\/g, '/'), target: '_blank', rel: 'noopener', text: 'Исходный файл панели' }) : el('span'));
+
+    // live numbers straight from git
+    const G = D.git;
+    if (G) {
+      const tiles = [
+        ['Коммитов', G.commits, `ветка ${G.branch}`],
+        ['Не отправлено', G.unpushed ?? '—', G.upstream ? `в ${G.upstream}` : 'нет удалённой ветки'],
+        ['Веток не слито', G.unmergedBranches, `в ${G.branch}`],
+        ['Последний коммит', G.last ? fmt(G.last.ts) : '—', G.last ? G.last.subject : ''],
+      ];
+      $('#t-live').replaceChildren(...tiles.map(([l, v, n]) => el('div', { class: 'card stat' }, el('div', { class: 'label', text: l + ' · сейчас' }), el('div', { class: 'value', text: String(v) }), el('div', { class: 'note', text: n }))));
+    }
+
+    // readiness per group and per block, as the dashboard rates them; a group without a percent
+    // (p: null) shows a dash and no bar
+    const readiness = (list, box) => {
+      for (const g of list) {
+        const rated = typeof g.p === 'number';
+        const card = el('div', { class: 'card block-card', tabindex: 0, role: 'button' }, el('div', { class: 'label mono muted', text: plain(g.n) }), el('div', { class: 'pct', text: rated ? `${g.p} %` : '—' }), rated ? el('div', { class: 'bar' }, el('i', { style: `width:${Math.max(0, Math.min(100, g.p))}%` })) : null, el('div', { class: 's' }, rich(g.s)));
+        card.addEventListener('click', () => card.classList.toggle('open'));
+        box.append(card);
+      }
+    };
+    const groups = Array.isArray(C.groups) ? C.groups : [];
+    $('#t-groups-title').hidden = $('#t-groups').hidden = !groups.length;
+    $('#t-groups-note').textContent = groups.length ? 'оценка из панели проекта' : '';
+    readiness(groups, $('#t-groups'));
+    const blocks = Array.isArray(C.blocks) ? C.blocks : [];
+    $('#t-blocks-title').hidden = $('#t-blocks').hidden = !blocks.length;
+    $('#t-blocks-note').textContent = blocks.length ? `оценка из панели проекта, средняя ${Math.round(blocks.reduce((s, m) => s + (m.p || 0), 0) / blocks.length)} %` : '';
+    readiness(blocks, $('#t-blocks'));
+
+    // columns: from the task files when there are any, otherwise from the dashboard
+    if (F) $('#t-toolbar').append(copyButton('Скопировать весь список для чата', listPrompt));
+    const card = F ? fileTaskCard : taskCard;
+    const PRI = Object.fromEntries((T.priorityOrder ?? []).map((p, i) => [p, i]));
+    const focus = F ? fileCols.focus : C.focus ?? [];
+    const wait = F ? fileCols.wait : [...(C.waiting ?? [])].sort((a, b) => (a.c === 'stop' ? 0 : 1) - (b.c === 'stop' ? 0 : 1));
+    const queue = F ? fileCols.queue : [...(C.queue ?? [])].sort((a, b) => (PRI[a.pri] ?? 99) - (PRI[b.pri] ?? 99));
+    $('#n-focus').textContent = focus.length; $('#n-wait').textContent = wait.length; $('#n-queue').textContent = queue.length;
+    for (const t of focus) $('#t-focus').append(card(t, 'focus'));
+    for (const t of wait) $('#t-wait').append(card(t, 'wait'));
+    const drawQueue = () => { $('#t-queue').replaceChildren(...queue.slice(0, queueAll ? queue.length : 25).map((t) => card(t, 'queue'))); $('#t-queue-more').style.display = queueAll || queue.length <= 25 ? 'none' : ''; applyTaskFilter(); };
+    $('#t-queue-more').addEventListener('click', () => { queueAll = true; drawQueue(); });
+    drawQueue();
+
+    // decisions, newest first (dates are «DD.MM»)
+    const dm = (s) => { const m = /^(\d{1,2})\.(\d{1,2})/.exec(s ?? ''); return m ? (+m[2]) * 100 + (+m[1]) : 0; };
+    const decisions = [...(C.decisions ?? [])].sort((a, b) => dm(b.d) - dm(a.d));
+    $('#c-dec').hidden = !decisions.length;
+    $('#n-dec').textContent = `(${decisions.length})`;
+    for (const x of decisions) $('#t-dec').append(el('div', { class: 'dec', 'data-find': plain(`${x.t} ${x.y}`).toLowerCase() }, el('div', {}, el('span', { class: 'dd', text: x.d }), rich(x.t)), el('div', { class: 'dy' }, rich(x.y))));
+
+    // one table the project wants on its page: {stamp, kpi: [{v, s}], cols, rows, note}
+    const table = C.table;
+    $('#c-table').hidden = !table;
+    if (table) {
+      $('#t-table-title').textContent = plain(T.titles?.table ?? 'Таблица');
+      $('#t-ord-stamp').textContent = plain(table.stamp ?? '');
+      for (const k of table.kpi ?? []) $('#t-ord-kpi').append(el('div', {}, el('b', { text: plain(k.v) }), el('small', {}, rich(k.s))));
+      const tbl = $('#t-ord');
+      tbl.append(el('tr', {}, ...(table.cols ?? []).map((c) => el('th', { text: plain(c) }))));
+      for (const r of table.rows ?? []) tbl.append(el('tr', {}, ...(Array.isArray(r) ? r : Object.values(r)).map((v) => el('td', {}, rich(v)))));
+      if (table.note) tbl.after(el('div', { class: 'hint', style: 'margin-top:8px' }, rich(table.note)));
+    }
+
+    // flags and documents
+    const flags = C.flags ?? [];
+    $('#c-flags').hidden = !flags.length;
+    for (const f of flags) $('#t-flags').append(el('div', { class: 'flag', 'data-find': plain(`${f.n} ${f.s}`).toLowerCase() }, el('span', { class: `sw ${f.on ? 'on' : 'off'}`, text: f.on ? 'вкл' : 'выкл' }), el('div', {}, el('span', { class: 'mono', text: plain(f.n) }), el('small', {}, rich(f.s)))));
+    $('#t-src').textContent = F
+      ? `Задачи — файлы ${F.dir}/<ключ>.md в ${F.ref}; их ведут сами чаты: взял — ${W.status}: ${W.inProgress} в своей ветке, закрыл — ${W.status}: ${W.done} в ветке исправления.` + (T.file ? ` Остальное на этой странице — из ${T.file}.` : '')
+      : `Источник раздела: ${T.file}. Журнал его только показывает и добавляет то, что случилось после.`;
+    for (const x of C.docs ?? []) $('#t-docs').append(el('div', { class: 'dec' }, el('div', { class: 'mono', text: plain(x.n) }), el('div', { class: 'dy' }, rich(x.w))));
+  }
+  function applyTaskFilter() {
+    const q = ($('#t-find')?.value ?? '').trim().toLowerCase();
+    for (const n of $$('#view-tasks [data-find]')) n.style.display = !q || n.dataset.find.includes(q) ? '' : 'none';
+  }
+  $('#t-find').addEventListener('input', applyTaskFilter);
+
+  // ------------------------------------------------ inspector
+  const insp = $('#inspector');
+  function closeInspector() { $('#app').classList.remove('inspecting'); uState.selected = null; highlight(null); }
+  function openInspector(...kids) {
+    insp.replaceChildren(el('button', { class: 'icon-btn close', 'aria-label': 'Закрыть', on: { click: closeInspector } }, '✕'), ...kids);
+    $('#app').classList.add('inspecting');
+    insp.scrollTop = 0;
+  }
+  const block = (label, ...kids) => el('div', { class: 'block' }, el('div', { class: 'label', text: label }), ...kids);
+  function inspectChat(c) {
+    uState.selected = { chat: c.i };
+    if (drawn.universe) highlight(uState.selected);
+    const files = el('ul', { class: 'files' }, ...c.files.slice(0, 25).map((f) => el('li', { text: f })));
+    if (c.fileCount > 25) files.append(el('li', { class: 'muted', text: `… и ещё ${c.fileCount - 25}` }));
+    openInspector(
+      el('div', { class: 'kicker', text: `${AGENT[c.agent] ?? c.agent} · ${VIA[c.via] ?? c.via}` }),
+      el('h2', { text: c.title || '(без названия)' }),
+      el('div', { class: 'dates', text: `${fmt(c.started)} → ${fmt(c.ended)} · ${c.users || 0} ${plural(c.users || 0, 'ваша реплика', 'ваши реплики', 'ваших реплик')}` }),
+      c.first ? block('С чего начали — ваши слова', el('div', { class: 'quote', text: c.first })) : null,
+      c.last ? block('Последний ответ агента', el('div', { class: 'quote agent-q', text: c.last })) : null,
+      c.areas.length ? block('Области проекта', el('div', { class: 'chips' }, ...c.areas.slice(0, 12).map(([a, n]) => el('button', { class: 'chip', title: D.areas[a].key, on: { click: () => inspectArea(a) }, text: `${areaLabel(a)} · ${n}` })))) : null,
+      c.commits.length ? block(`Коммиты чата (${c.commits.length})`, el('ul', { class: 'commits' }, ...c.commits.slice(0, 20).map(([h, s]) => el('li', {}, el('code', { text: h }), s)))) : null,
+      c.files.length ? block(`Файлы (${c.fileCount})`, files) : null,
+      block('Весь диалог', el('div', { class: 'id-line', text: `Спросите агента: «открой чат ${c.id.slice(0, 8)} в журнале» — инструмент journal_session. Или: node journal.mjs session ${c.id.slice(0, 8)}` })));
+  }
+  function inspectArea(i) {
+    uState.selected = { area: i };
+    if (drawn.universe) highlight(uState.selected);
+    const area = D.areas[i];
+    const list = el('div', { class: 'list' });
+    for (const [c, n] of [...areaChats[i]].sort((a, b) => b[0].ended.localeCompare(a[0].ended)).slice(0, 30)) list.append(chatRow(c, `${n} ${plural(n, 'файл', 'файла', 'файлов')}`));
+    const commits = areaCommits[i].slice().reverse();
+    openInspector(
+      el('div', { class: 'kicker', text: 'Область проекта' }),
+      el('h2', { text: area.label }),
+      el('div', { class: 'dates mono', text: area.key || '(файлы в корне проекта)' }),
+      el('div', { class: 'dates', text: `${areaChats[i].length} ${plural(areaChats[i].length, 'чат', 'чата', 'чатов')} · ${commits.length} ${plural(commits.length, 'коммит', 'коммита', 'коммитов')}${commits.length ? ` · последний ${fmtDay(commits[0][1])}` : ''}` }),
+      block('Чаты, которые здесь работали', list),
+      commits.length ? block('Последние коммиты', el('ul', { class: 'commits' }, ...commits.slice(0, 20).map((cm) => el('li', {}, el('code', { text: cm[0] }), `${fmtDay(cm[1])} · ${cm[2]}`)))) : null);
+  }
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeInspector(); });
+
+  // Task lists should never go stale: a project may rebuild this page after every commit (a git hook
+  // calling `journal.mjs view`); coming back to the tab after a while re-reads it, and the #section in
+  // the address keeps the same view open.
+  const loadedAt = Date.now();
+  $('#fresh-pill').textContent = `собрано ${fmt(D.generated)}`;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - loadedAt > 3 * 60 * 1000) location.reload();
+  });
+
+  const start = (location.hash || '').slice(1);
+  go(TITLES[start] ? start : 'center');
+})();
+</script>
+</body>
+</html>

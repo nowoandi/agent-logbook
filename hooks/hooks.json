@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/server/journal.mjs",
+              "hook-start"
+            ],
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "agent-logbook",
+  "version": "1.0.0",
+  "description": "Журнал проекта: прошлые чаты и git log папки проекта — поиск, сводка, задачи. Навык и MCP-сервер, без хука.",
+  "author": {
+    "name": "Andrej Hermann"
+  },
+  "license": "MIT",
+  "keywords": [
+    "journal",
+    "chat-history",
+    "memory",
+    "git",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.codex-plugin/mcp.json",
+  "hooks": {},
+  "interface": {
+    "displayName": "Agent Logbook",
+    "shortDescription": "Прошлые чаты и git log проекта: поиск и сводка",
+    "developerName": "Andrej Hermann",
+    "category": "Productivity"
+  }
+}

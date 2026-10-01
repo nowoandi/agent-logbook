@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "journal": {
+      "command": "node",
+      "args": [
+        "./server/journal.mjs",
+        "mcp"
+      ],
+      "cwd": ".",
+      "env_vars": [
+        "PATH",
+        "HOME",
+        "USERPROFILE",
+        "APPDATA",
+        "LOCALAPPDATA",
+        "XDG_CONFIG_HOME",
+        "SYSTEMROOT",
+        "TEMP",
+        "TMP",
+        "AGENT_LOGBOOK_HOME"
+      ]
+    }
+  }
+}
