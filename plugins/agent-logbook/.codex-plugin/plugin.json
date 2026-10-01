@@ -1,6 +1,6 @@
 {
   "name": "agent-logbook",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Журнал проекта: прошлые чаты и git log папки проекта — поиск, сводка, задачи. Навык и MCP-сервер, без хука.",
   "author": {
     "name": "Andrej Hermann"

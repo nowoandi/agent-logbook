@@ -10,7 +10,7 @@
       "name": "agent-logbook",
       "source": "./plugins/agent-logbook",
       "description": "Журнал проекта: поиск по прошлым чатам и git log, сводка в начале чата, задачи",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "category": "productivity"
     }
   ]

@@ -17,7 +17,8 @@
         "SYSTEMROOT",
         "TEMP",
         "TMP",
-        "AGENT_LOGBOOK_HOME"
+        "AGENT_LOGBOOK_HOME",
+        "AGENT_LOGBOOK_LANG"
       ]
     }
   }

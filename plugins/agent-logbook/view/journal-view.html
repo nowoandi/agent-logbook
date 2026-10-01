@@ -1,14 +1,15 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Журнал проекта</title>
+<title>Project journal</title>
 <!--
-  Оформление — по образу «Системы Райта» (raytsystem, Apache-2.0): палитра, шрифты, экраны
-  «Центр управления» и «Вселенная». Шрифты IBM Plex и Bricolage Grotesque — SIL OFL 1.1
-  (view/fonts/FONTS-OFL-1.1.txt). Данные — только журнал этого компьютера; страница никуда
-  ничего не отправляет.
+  Design after Rayt's System (raytsystem, Apache-2.0): palette, fonts, the «Control centre» and
+  «Universe» screens. Fonts IBM Plex and Bricolage Grotesque — SIL OFL 1.1
+  (view/fonts/FONTS-OFL-1.1.txt). Data: only this computer's journal; the page sends nothing anywhere.
+  Words: the table UI in the script, one entry per language. The English in the markup below is only
+  a placeholder the table writes over (data-i18n*), so the page can serve any language the server picks.
 -->
 <style>
 /*__FONTS__*/
@@ -129,7 +130,7 @@ main { overflow: auto; display: flex; flex-direction: column; min-width: 0; }
 .ring { fill: none; stroke: var(--line); stroke-opacity: .5; }
 .ring.dash { stroke-dasharray: 2 6; }
 .tick { fill: var(--muted-2); font: 10px var(--mono); }
-/* «Орбита» shows no lines until a node is pointed at: all links at once are the web nobody can read. */
+/* «Orbit» shows no lines until a node is pointed at: all links at once are the web nobody can read. */
 .edge { fill: none; stroke: var(--muted-2); stroke-opacity: 0; stroke-width: 1; }
 svg.links .edge { stroke-opacity: .08; }
 .edge.hot, svg.links .edge.hot { stroke: var(--tangerine); stroke-opacity: .8; stroke-width: 1.6; }
@@ -316,130 +317,130 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
 <body>
 <div class="app" id="app">
   <aside class="sidebar">
-    <div class="brand"><b>&gt;_</b><div><span>журнал проекта</span><small id="brand-project"></small></div></div>
-    <nav class="nav" aria-label="Разделы">
-      <div class="nav-title">Пространство</div>
-      <button data-view="center" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Центр управления</button>
-      <div class="nav-title" style="margin-top:14px">Оркестрация</div>
-      <button data-view="universe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="19" cy="7" r="1.5" fill="currentColor"/></svg>Вселенная</button>
-      <button data-view="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Лента</button>
-      <button data-view="tasks" id="nav-tasks" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></svg>Задачи</button>
+    <div class="brand"><b>&gt;_</b><div><span data-i18n="brand">project journal</span><small id="brand-project"></small></div></div>
+    <nav class="nav" aria-label="Sections" data-i18n-aria-label="navAria">
+      <div class="nav-title" data-i18n="navWorkspace">Workspace</div>
+      <button data-view="center" aria-current="page" data-i18n="viewCenter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Control centre</button>
+      <div class="nav-title" style="margin-top:14px" data-i18n="navOrchestration">Orchestration</div>
+      <button data-view="universe" data-i18n="viewUniverse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="19" cy="7" r="1.5" fill="currentColor"/></svg>Universe</button>
+      <button data-view="feed" data-i18n="viewFeed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Feed</button>
+      <button data-view="tasks" id="nav-tasks" hidden data-i18n="viewTasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></svg>Tasks</button>
     </nav>
-    <div class="side-foot"><strong>Локально</strong><span class="dot"></span><span id="foot-synced"></span></div>
+    <div class="side-foot"><strong data-i18n="footLocal">Local</strong><span class="dot"></span><span id="foot-synced"></span></div>
   </aside>
 
   <main id="main">
     <header class="top">
-      <div><div class="kicker" id="top-kicker">Пространство</div><h1 id="top-title">Центр управления</h1><span class="sub" id="top-sub"></span></div>
+      <div><div class="kicker" id="top-kicker" data-i18n="navWorkspace">Workspace</div><h1 id="top-title" data-i18n="viewCenter">Control centre</h1><span class="sub" id="top-sub"></span></div>
       <div class="top-actions">
-        <span class="pill" id="fresh-pill" title="Когда страница собрана; вернувшись на вкладку через несколько минут, она перечитает себя"></span>
-        <span class="pill ok"><span class="dot"></span>только локально</span>
-        <button class="icon-btn" id="theme-btn" title="Светлая или тёмная тема" aria-label="Сменить тему"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+        <span class="pill" id="fresh-pill" title="When the page was built; come back to the tab after a few minutes and it reloads itself" data-i18n-title="freshTitle"></span>
+        <span class="pill ok" data-i18n="localOnly"><span class="dot"></span>local only</span>
+        <button class="icon-btn" id="theme-btn" title="Light or dark theme" aria-label="Switch theme" data-i18n-title="themeTitle" data-i18n-aria-label="themeAria"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
       </div>
     </header>
 
-    <section class="view active" id="view-center" aria-label="Центр управления">
+    <section class="view active" id="view-center" aria-label="Control centre" data-i18n-aria-label="viewCenter">
       <div class="hero">
         <div class="card hero-main">
-          <div class="kicker">Центр управления · журнал проекта</div>
+          <div class="kicker" data-i18n="heroKicker">Control centre · project journal</div>
           <h2 id="hero-title"></h2>
-          <p>Чаты Claude Code, Cowork и Codex и история коммитов — одна лента работы. Журнал только читает их и хранится на этом компьютере.</p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-go="universe">Открыть вселенную</button><button class="btn" data-go="feed">Лента по дням</button></div>
+          <p data-i18n="heroText">Claude Code, Cowork and Codex chats plus the commit history, as one stream of work. The journal only reads them and is kept on this computer.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-go="universe" data-i18n="openUniverse">Open the universe</button><button class="btn" data-go="feed" data-i18n="feedByDay">Feed by day</button></div>
           <svg class="hero-orbit" id="hero-orbit" viewBox="-150 -150 300 300" aria-hidden="true"></svg>
         </div>
         <div class="card">
-          <div class="kicker">Последнее</div>
-          <h3>Где остановились</h3>
-          <div class="hint">Самые свежие чаты и коммиты</div>
+          <div class="kicker" data-i18n="latestKicker">Latest</div>
+          <h3 data-i18n="latestTitle">Where we left off</h3>
+          <div class="hint" data-i18n="latestHint">The most recent chats and commits</div>
           <div class="list" id="latest"></div>
         </div>
       </div>
       <div class="card tasks-plate" id="center-tasks" hidden>
         <div class="plate-text">
-          <div class="kicker">Задачи проекта · обновляются сами</div>
-          <h3>Список задач</h3>
+          <div class="kicker" data-i18n="plateKicker">Project tasks · always up to date</div>
+          <h3 data-i18n="plateTitle">Task list</h3>
           <div class="tasks-summary" id="center-tasks-nums"></div>
           <div class="hint" id="center-tasks-fresh"></div>
         </div>
-        <button class="btn primary plate-go" data-go="tasks">Открыть список задач <span aria-hidden="true">→</span></button>
+        <button class="btn primary plate-go" data-go="tasks" data-i18n="openTaskList">Open the task list <span aria-hidden="true">→</span></button>
       </div>
       <div class="stat-row" id="stats"></div>
       <div class="two">
         <div class="card weeks">
-          <h3>Активность по неделям</h3>
-          <div class="hint">Сколько чатов шло и сколько коммитов сделано</div>
-          <div class="legend"><span><i style="background:var(--tangerine)"></i>чаты</span><span><i style="background:var(--cyan)"></i>коммиты</span></div>
+          <h3 data-i18n="weeksTitle">Activity by week</h3>
+          <div class="hint" data-i18n="weeksHint">How many chats ran and how many commits were made</div>
+          <div class="legend"><span data-i18n="legendChats"><i style="background:var(--tangerine)"></i>chats</span><span data-i18n="legendCommits"><i style="background:var(--cyan)"></i>commits</span></div>
           <svg id="weeks" preserveAspectRatio="none"></svg>
         </div>
         <div class="card">
-          <h3>Горячие области</h3>
-          <div class="hint">Где работали последние 14 дней — по числу чатов</div>
+          <h3 data-i18n="hotTitle">Hot areas</h3>
+          <div class="hint" data-i18n="hotHint">Where work happened in the last 14 days, by number of chats</div>
           <div id="hot"></div>
         </div>
       </div>
     </section>
 
-    <section class="view" id="view-universe" aria-label="Вселенная">
+    <section class="view" id="view-universe" aria-label="Universe" data-i18n-aria-label="viewUniverse">
       <div class="toolbar">
-        <div class="tabs" id="lens" role="group" aria-label="Кто работал">
-          <button data-agent="all" aria-pressed="true">Вся вселенная</button>
+        <div class="tabs" id="lens" role="group" aria-label="Who worked" data-i18n-aria-label="lensAria">
+          <button data-agent="all" aria-pressed="true" data-i18n="lensAll">Whole universe</button>
           <button data-agent="claude" aria-pressed="false"><span class="agent claude" style="margin:0"></span>Claude Code</button>
           <button data-agent="cowork" aria-pressed="false"><span class="agent cowork" style="margin:0"></span>Cowork</button>
           <button data-agent="codex" aria-pressed="false"><span class="agent codex" style="margin:0"></span>Codex</button>
         </div>
-        <div class="tabs" id="mode" role="group" aria-label="Вид">
-          <button data-mode="orbit" aria-pressed="true">Орбита</button>
-          <button data-mode="links" aria-pressed="false">Связи</button>
+        <div class="tabs" id="mode" role="group" aria-label="View" data-i18n-aria-label="modeAria">
+          <button data-mode="orbit" aria-pressed="true" data-i18n="modeOrbit">Orbit</button>
+          <button data-mode="links" aria-pressed="false" data-i18n="modeLinks">Links</button>
         </div>
-        <div class="tabs" id="period" role="group" aria-label="Период">
-          <button data-days="0" aria-pressed="true">Всё время</button>
-          <button data-days="30" aria-pressed="false">30 дней</button>
-          <button data-days="7" aria-pressed="false">7 дней</button>
+        <div class="tabs" id="period" role="group" aria-label="Period" data-i18n-aria-label="periodAria">
+          <button data-days="0" aria-pressed="true" data-i18n="periodAll">All time</button>
+          <button data-days="30" aria-pressed="false" data-i18n="period30">30 days</button>
+          <button data-days="7" aria-pressed="false" data-i18n="period7">7 days</button>
         </div>
-        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="find" placeholder="Найти чат или область" autocomplete="off"></label>
+        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="find" placeholder="Find a chat or area" data-i18n-placeholder="findChat" autocomplete="off"></label>
       </div>
       <div class="meta-line" id="u-meta"></div>
       <div class="stage">
-        <svg id="universe" aria-label="Вселенная проекта: в центре проект, на внутреннем кольце области кода, на внешнем чаты по времени"></svg>
-        <div class="corner"><button class="btn" id="fit">Показать всё</button></div>
-        <div class="note">Внешнее кольцо — чаты по времени, по часовой стрелке от старых к новым. Внутреннее — области проекта, где эти чаты меняли файлы; область стоит ближе к тем месяцам, когда над ней работали.</div>
+        <svg id="universe" aria-label="Project universe: the project in the centre, code areas on the inner ring, chats over time on the outer ring" data-i18n-aria-label="universeAria"></svg>
+        <div class="corner"><button class="btn" id="fit" data-i18n="fit">Show all</button></div>
+        <div class="note" data-i18n="universeNote">Outer ring: chats over time, clockwise from oldest to newest. Inner ring: the project areas where those chats changed files; an area sits nearer the months when it was worked on.</div>
       </div>
     </section>
 
-    <section class="view" id="view-tasks" aria-label="Задачи">
+    <section class="view" id="view-tasks" aria-label="Tasks" data-i18n-aria-label="viewTasks">
       <div class="card fresh" id="t-fresh"></div>
       <!-- The list comes first: the plate in the control centre opens this view to see the tasks. -->
       <div class="toolbar" id="t-toolbar" style="margin-top:6px">
-        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="t-find" placeholder="Найти задачу, решение или переключатель" autocomplete="off"></label>
+        <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="t-find" placeholder="Find a task, decision or flag" data-i18n-placeholder="findTask" autocomplete="off"></label>
       </div>
       <div class="cols">
-        <div class="col c-focus"><h3>Фокус <span id="n-focus"></span></h3><div id="t-focus"></div></div>
-        <div class="col c-wait"><h3>Ждёт <span id="n-wait"></span></h3><div id="t-wait"></div></div>
-        <div class="col c-queue"><h3>Очередь <span id="n-queue"></span></h3><div id="t-queue"></div><button class="btn" id="t-queue-more">Показать всю очередь</button></div>
+        <div class="col c-focus"><h3 data-i18n="colFocus">Focus <span id="n-focus"></span></h3><div id="t-focus"></div></div>
+        <div class="col c-wait"><h3 data-i18n="colWait">Waiting <span id="n-wait"></span></h3><div id="t-wait"></div></div>
+        <div class="col c-queue"><h3 data-i18n="colQueue">Queue <span id="n-queue"></span></h3><div id="t-queue"></div><button class="btn" id="t-queue-more" data-i18n="queueMore">Show the whole queue</button></div>
       </div>
       <div class="stat-row" id="t-live" style="margin-top:22px"></div>
-      <div class="sec-title" id="t-groups-title" hidden>Готовность по группам <span id="t-groups-note"></span></div>
+      <div class="sec-title" id="t-groups-title" hidden data-i18n="groupsTitle">Readiness by group <span id="t-groups-note"></span></div>
       <div class="blocks" id="t-groups" hidden></div>
-      <div class="sec-title" id="t-blocks-title" hidden>Готовность по блокам <span id="t-blocks-note"></span></div>
+      <div class="sec-title" id="t-blocks-title" hidden data-i18n="blocksTitle">Readiness by block <span id="t-blocks-note"></span></div>
       <div class="blocks" id="t-blocks" hidden></div>
       <div class="two" style="margin-top:16px">
-        <div class="card" id="c-dec" hidden><h3>Решения <span class="muted mono" id="n-dec"></span></h3><div class="hint">Что решено и почему — новые сверху</div><div id="t-dec"></div></div>
-        <div class="card" id="c-table" hidden><h3 id="t-table-title">Таблица</h3><div class="hint" id="t-ord-stamp"></div><div class="kpis" id="t-ord-kpi"></div><div style="overflow:auto"><table class="ord" id="t-ord"></table></div></div>
+        <div class="card" id="c-dec" hidden><h3 data-i18n="decisionsTitle">Decisions <span class="muted mono" id="n-dec"></span></h3><div class="hint" data-i18n="decisionsHint">What was decided and why, newest first</div><div id="t-dec"></div></div>
+        <div class="card" id="c-table" hidden><h3 id="t-table-title" data-i18n="table">Table</h3><div class="hint" id="t-ord-stamp"></div><div class="kpis" id="t-ord-kpi"></div><div style="overflow:auto"><table class="ord" id="t-ord"></table></div></div>
       </div>
       <div class="two" style="margin-top:16px">
-        <div class="card" id="c-flags" hidden><h3>Переключатели</h3><div class="hint">Что сейчас включено и что это значит</div><div id="t-flags"></div></div>
-        <div class="card"><h3>Где что лежит</h3><div class="hint" id="t-src"></div><div id="t-docs"></div></div>
+        <div class="card" id="c-flags" hidden><h3 data-i18n="flagsTitle">Flags</h3><div class="hint" data-i18n="flagsHint">What is switched on now and what it means</div><div id="t-flags"></div></div>
+        <div class="card"><h3 data-i18n="docsTitle">Where things are</h3><div class="hint" id="t-src"></div><div id="t-docs"></div></div>
       </div>
     </section>
 
-    <section class="view" id="view-feed" aria-label="Лента">
+    <section class="view" id="view-feed" aria-label="Feed" data-i18n-aria-label="viewFeed">
       <div class="meta-line" id="f-meta"></div>
       <div id="feed"></div>
-      <button class="btn" id="more" style="margin-top:8px">Показать ещё</button>
+      <button class="btn" id="more" style="margin-top:8px" data-i18n="feedMore">Show more</button>
     </section>
   </main>
 
-  <aside class="inspector" id="inspector" aria-label="Подробности"></aside>
+  <aside class="inspector" id="inspector" aria-label="Details" data-i18n-aria-label="inspectorAria"></aside>
 </div>
 <div class="tooltip" id="tip" role="tooltip"></div>
 
@@ -463,16 +464,238 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     for (const k of kids.flat()) if (k != null) n.append(k instanceof Node ? k : document.createTextNode(String(k)));
     return n;
   };
+  // ------------------------------------------------ language
+  // Every word the page shows lives in this table, one entry per language, so the plugin reads the same
+  // in any language the server picks (D.ui). A key the chosen table lacks falls back to English, so a
+  // new language can start with a few keys. A phrase that takes values is a function; a counted word is
+  // the list of its forms, picked by that table's own $plural rule. The Russian table keeps the page
+  // word for word as it read before the table existed: projects and chats rely on those words.
+  const plural = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? b : c; };
+  const UI = {
+    en: {
+      $plural: (n, one, other) => (n === 1 ? one : other),
+      chats: ['chat', 'chats'], commits: ['commit', 'commits'], turns: ['message', 'messages'], yourTurns: ['message from you', 'messages from you'],
+      files: ['file', 'files'], hours: ['hour', 'hours'], days: ['day', 'days'],
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+      percent: (p) => `${p}%`,
+      quote: (s) => `“${s}”`,
+      and: ' and ',
+      // frame and navigation
+      brand: 'project journal', navAria: 'Sections', navWorkspace: 'Workspace', navOrchestration: 'Orchestration',
+      viewCenter: 'Control centre', viewUniverse: 'Universe', viewFeed: 'Feed', viewTasks: 'Tasks',
+      subCenter: 'Project status and latest work', subUniverse: 'Chats, project areas and the links between them', subFeed: 'All work, day by day', subTasks: 'All project tasks — always up to date',
+      footLocal: 'Local', synced: (when) => `updated ${when}`, neverSynced: 'not updated yet',
+      freshTitle: 'When the page was built; come back to the tab after a few minutes and it reloads itself', built: (when) => `built ${when}`,
+      localOnly: 'local only', themeTitle: 'Light or dark theme', themeAria: 'Switch theme', inspectorAria: 'Details', close: 'Close',
+      untitled: '(untitled)',
+      // control centre
+      heroKicker: 'Control centre · project journal', heroEm: 'all the work at a glance.',
+      heroText: 'Claude Code, Cowork and Codex chats plus the commit history, as one stream of work. The journal only reads them and is kept on this computer.',
+      openUniverse: 'Open the universe', feedByDay: 'Feed by day',
+      latestKicker: 'Latest', latestTitle: 'Where we left off', latestHint: 'The most recent chats and commits',
+      plateKicker: 'Project tasks · always up to date', plateTitle: 'Task list', openTaskList: 'Open the task list',
+      statChats: 'Chats', statTurns: 'Your messages', statTurnsNote: 'in these chats', statCommits: 'Commits', statFirst: 'First chat',
+      latestOn: (day) => `latest ${day}`, historySince: (year) => `history since ${year}`,
+      weeksTitle: 'Activity by week', weeksHint: 'How many chats ran and how many commits were made', legendChats: 'chats', legendCommits: 'commits',
+      weekChats: (day, n) => `week of ${day}: ${count(n, 'chats')}`, weekCommits: (day, n) => `week of ${day}: ${count(n, 'commits')}`,
+      hotTitle: 'Hot areas', hotHint: 'Where work happened in the last 14 days, by number of chats', hotNone: 'No chats in the last 14 days.',
+      orbitHub: 'hub',
+      // universe
+      lensAria: 'Who worked', lensAll: 'Whole universe', modeAria: 'View', modeOrbit: 'Orbit', modeLinks: 'Links',
+      periodAria: 'Period', periodAll: 'All time', period30: '30 days', period7: '7 days', findChat: 'Find a chat or area',
+      universeAria: 'Project universe: the project in the centre, code areas on the inner ring, chats over time on the outer ring',
+      fit: 'Show all',
+      universeNote: 'Outer ring: chats over time, clockwise from oldest to newest. Inner ring: the project areas where those chats changed files; an area sits nearer the months when it was worked on.',
+      areaAria: (name) => `Area ${name}`, chatAria: (title) => `Chat ${title}`, commitsShort: (n) => count(n, 'commits'),
+      uVerified: '● verified journal snapshot', uShown: (shown, total) => `showing ${shown} of ${total} chats`, uAreas: (n) => `areas: ${n}`,
+      areaRoot: 'project root',
+      // feed
+      noFileEdits: 'no file edits', dayCommits: (n) => `day's commits (${n})`, feedDays: (n) => `days with work: ${n}`, feedShown: (n) => `shown: ${n}`, feedMore: 'Show more',
+      // inspector
+      via: { cwd: 'worked in the project folder', folder: 'folder chosen in Cowork', edits: 'edited project files from another folder', commits: 'committed to the project' },
+      andMore: (n) => `… and ${n} more`, bStart: 'How it started — your words', bLast: "The agent's last reply", bAreas: 'Project areas',
+      bChatCommits: (n) => `Chat commits (${n})`, bFiles: (n) => `Files (${n})`, bDialog: 'Full conversation',
+      openChatHint: (id) => `Ask an agent: “open chat ${id} in the journal” — tool journal_session. Or: node journal.mjs session ${id}`,
+      areaKicker: 'Project area', rootFiles: '(files in the project root)', bAreaChats: 'Chats that worked here', bRecentCommits: 'Recent commits',
+      // tasks and the project's dashboard
+      agoUnderHour: 'less than an hour ago', agoHours: (h) => `${count(h, 'hours')} ago`, agoDays: (n) => `${count(n, 'days')} ago`,
+      owner: { agent: 'agent', human: 'human', external: 'outside' },
+      status: { in_progress: 'in progress', now: 'now', waiting: 'waiting', next: 'next', later: 'later', done: 'closed' },
+      numFocus: 'in focus', numWaiting: 'waiting', numQueue: 'queued', numTaken: 'taken by chats',
+      plateFiles: (f, human) => `Tasks are files in ${f.dir}/ on ${f.ref} (${f.head}), read on every open. Free for an agent: ${f.counts.free}; on the “${human}” side: ${f.counts.human}.`,
+      plateRest: (ago) => ` Everything else comes from the project dashboard, updated ${ago}.`,
+      plateDash: (when, ago) => `Project dashboard updated ${when} (${ago}).`,
+      plateBehind: (commits, chats) => ` Since then: ${commits} and ${chats}; the details are under “Tasks”.`,
+      nothingSince: 'Nothing has changed since.', nothingSinceDash: 'Nothing has changed since the dashboard was updated.',
+      tasksError: 'Could not read the tasks or the project dashboard: ',
+      findTask: 'Find a task, decision or flag', colFocus: 'Focus', colWait: 'Waiting', colQueue: 'Queue', queueMore: 'Show the whole queue',
+      cardPriority: (p) => `priority: ${p}`, cardBlocking: 'blocking', cardKey: (key) => `key ${key}`, cardWhere: 'where: ',
+      copyTitle: 'Copy a text for a new chat to the clipboard', copied: 'Copied ✓', copyFailed: 'Copy failed', copyTask: 'Copy task', copyList: 'Copy the whole list for a chat',
+      urgent: 'urgent', takenBy: 'taken: ', unnamedChat: 'unnamed chat', checkPrefix: 'Check: ',
+      closedInBranch: (branch, closed) => `closed in branch ${branch}${closed ? ` (${closed})` : ''} — waiting for merge`,
+      sourceIs: (s) => `source: ${s}`, sinceDate: (date) => `since ${date}`,
+      // the text a copy button puts on the clipboard for a new chat
+      howToTake: (w) => `How to take a task: in your own branch set ${w.status}: ${w.inProgress} and ${w.session}: <chat name> in the task file and commit at once; close it in the branch of the fix (${w.status}: ${w.done}, ${w.closed}: <date> <commit>).`,
+      projectRules: (readme) => ` Project rules: ${readme}.`,
+      pContinue: (name, project) => `Continue work on ${name} (${project}).`,
+      pTask: 'TASK:', pKey: 'KEY:', pFile: 'file', pGroup: 'GROUP:', pDo: 'TO DO:', pCheck: 'CHECK:', pSource: 'SOURCE:', unnamed: 'unnamed',
+      pTaken: (session, branch) => `ALREADY TAKEN: chat “${session}”, branch ${branch} — ask that chat first so the work is not done twice.`,
+      pTakenStale: (session, branch, ago) => `MARKED TAKEN ${ago}: chat “${session}”, branch ${branch}. Check the git log of the task file and of the branch: with no fresh commits that chat has most likely moved on — then take it and say so; do not wait for an answer.`,
+      pClosed: (branch) => `ALREADY CLOSED in branch ${branch} — check whether it only waits for a merge.`,
+      pNumbers: 'Numbers in a task are a snapshot from when it was set: recount them first.',
+      listHead: (name, when, at, focus, wait, queue) => `Tasks of ${name} as of ${when} (${at}): ${focus} in focus, ${wait} waiting, ${queue} queued.`,
+      listFocus: 'IN FOCUS:', listWait: 'WAITING:', listQueue: 'QUEUED:',
+      listEach: (dir) => `Each task is a file ${dir}/<key>.md.`, listGroupFirst: (group) => ` Group “${group}” comes first.`, listAsk: ' What would you take next, and why?',
+      // the tasks view
+      dashFrom: 'Blocks, decisions and the rest below come from the project dashboard, updated ', sinceThen: 'Since then: ', notInDash: ' — not in the dashboard yet.',
+      filesKicker: (dir, ref) => `Tasks · files in ${dir}/ on ${ref} and in branches · read on every open`,
+      filesHead: (open, taken, free) => `${open} open: ${taken} taken by chats, ${free} free for an agent`,
+      humanSide: (label, n) => `on the “${label}” side: ${n}`, byGroup: (s) => `by group: ${s}`,
+      closedWaiting: (n) => `closed in branches, waiting for merge: ${n}`, newInBranches: (n) => `new in branches: ${n}`,
+      dashKicker: 'Project dashboard · read on every open', dashUpdated: (when, ago) => `Updated ${when} — ${ago}`,
+      commitLine: (hash, subject) => `commit ${hash} · ${subject}`,
+      newTasksInBranches: (n) => `new tasks in branches (${n})`, chatsSinceDash: (n) => `chats since the dashboard update (${n})`,
+      turnsAfter: (n) => `${count(n, 'turns')} since`, commitsSinceDash: (n) => `commits since the dashboard update (${n})`,
+      dashSourceFile: 'Dashboard source file',
+      branchIs: (branch) => `branch ${branch}`, liveUnpushed: 'Not pushed', toUpstream: (upstream) => `to ${upstream}`, noUpstream: 'no remote branch',
+      liveUnmerged: 'Unmerged branches', intoBranch: (branch) => `into ${branch}`, liveLast: 'Latest commit', liveNow: ' · now',
+      groupsTitle: 'Readiness by group', blocksTitle: 'Readiness by block',
+      ratedByDash: 'as rated in the project dashboard', ratedAvg: (pct) => `as rated in the project dashboard, ${pct} on average`,
+      decisionsTitle: 'Decisions', decisionsHint: 'What was decided and why, newest first', table: 'Table',
+      flagsTitle: 'Flags', flagsHint: 'What is switched on now and what it means', flagOn: 'on', flagOff: 'off',
+      docsTitle: 'Where things are',
+      srcFiles: (f, w) => `Tasks are files ${f.dir}/<key>.md on ${f.ref}, kept by the chats themselves: taking one sets ${w.status}: ${w.inProgress} in the chat's own branch, closing it sets ${w.status}: ${w.done} in the branch of the fix.`,
+      srcRest: (file) => ` Everything else on this page comes from ${file}.`,
+      srcDash: (file) => `Source of this section: ${file}. The journal only shows it and adds what happened since.`,
+    },
+    ru: {
+      $plural: (n, one, few, many) => plural(n, one, few, many),
+      chats: ['чат', 'чата', 'чатов'], commits: ['коммит', 'коммита', 'коммитов'], turns: ['реплика', 'реплики', 'реплик'], yourTurns: ['ваша реплика', 'ваши реплики', 'ваших реплик'],
+      files: ['файл', 'файла', 'файлов'], hours: ['час', 'часа', 'часов'], days: ['день', 'дня', 'дней'],
+      months: ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
+      weekdays: ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'],
+      percent: (p) => `${p} %`,
+      quote: (s) => `«${s}»`,
+      and: ' и ',
+      // frame and navigation
+      brand: 'журнал проекта', navAria: 'Разделы', navWorkspace: 'Пространство', navOrchestration: 'Оркестрация',
+      viewCenter: 'Центр управления', viewUniverse: 'Вселенная', viewFeed: 'Лента', viewTasks: 'Задачи',
+      subCenter: 'Состояние проекта и последняя работа', subUniverse: 'Чаты, области проекта и связи между ними', subFeed: 'Вся работа по дням', subTasks: 'Все задачи проекта — обновляются сами',
+      footLocal: 'Локально', synced: (when) => `обновлён ${when}`, neverSynced: 'ещё не обновлялся',
+      freshTitle: 'Когда страница собрана; вернувшись на вкладку через несколько минут, она перечитает себя', built: (when) => `собрано ${when}`,
+      localOnly: 'только локально', themeTitle: 'Светлая или тёмная тема', themeAria: 'Сменить тему', inspectorAria: 'Подробности', close: 'Закрыть',
+      untitled: '(без названия)',
+      // control centre
+      heroKicker: 'Центр управления · журнал проекта', heroEm: 'вся работа в одном поле зрения.',
+      heroText: 'Чаты Claude Code, Cowork и Codex и история коммитов — одна лента работы. Журнал только читает их и хранится на этом компьютере.',
+      openUniverse: 'Открыть вселенную', feedByDay: 'Лента по дням',
+      latestKicker: 'Последнее', latestTitle: 'Где остановились', latestHint: 'Самые свежие чаты и коммиты',
+      plateKicker: 'Задачи проекта · обновляются сами', plateTitle: 'Список задач', openTaskList: 'Открыть список задач',
+      statChats: 'Чатов', statTurns: 'Ваших реплик', statTurnsNote: 'в этих чатах', statCommits: 'Коммитов', statFirst: 'Первый чат',
+      latestOn: (day) => `последний ${day}`, historySince: (year) => `история с ${year} года`,
+      weeksTitle: 'Активность по неделям', weeksHint: 'Сколько чатов шло и сколько коммитов сделано', legendChats: 'чаты', legendCommits: 'коммиты',
+      weekChats: (day, n) => `неделя с ${day}: чатов ${n}`, weekCommits: (day, n) => `неделя с ${day}: коммитов ${n}`,
+      hotTitle: 'Горячие области', hotHint: 'Где работали последние 14 дней — по числу чатов', hotNone: 'За 14 дней чатов не было.',
+      orbitHub: 'hub',
+      // universe
+      lensAria: 'Кто работал', lensAll: 'Вся вселенная', modeAria: 'Вид', modeOrbit: 'Орбита', modeLinks: 'Связи',
+      periodAria: 'Период', periodAll: 'Всё время', period30: '30 дней', period7: '7 дней', findChat: 'Найти чат или область',
+      universeAria: 'Вселенная проекта: в центре проект, на внутреннем кольце области кода, на внешнем чаты по времени',
+      fit: 'Показать всё',
+      universeNote: 'Внешнее кольцо — чаты по времени, по часовой стрелке от старых к новым. Внутреннее — области проекта, где эти чаты меняли файлы; область стоит ближе к тем месяцам, когда над ней работали.',
+      areaAria: (name) => `Область ${name}`, chatAria: (title) => `Чат ${title}`, commitsShort: (n) => `${n} комм.`,
+      uVerified: '● проверенный срез журнала', uShown: (shown, total) => `видно ${shown} из ${total} чатов`, uAreas: (n) => `областей ${n}`,
+      areaRoot: 'корень проекта',
+      // feed
+      noFileEdits: 'без правок файлов', dayCommits: (n) => `коммиты дня (${n})`, feedDays: (n) => `дней с работой: ${n}`, feedShown: (n) => `показано: ${n}`, feedMore: 'Показать ещё',
+      // inspector
+      via: { cwd: 'работал в папке проекта', folder: 'папка выбрана в Cowork', edits: 'правил файлы проекта из другой папки', commits: 'коммитил в проект' },
+      andMore: (n) => `… и ещё ${n}`, bStart: 'С чего начали — ваши слова', bLast: 'Последний ответ агента', bAreas: 'Области проекта',
+      bChatCommits: (n) => `Коммиты чата (${n})`, bFiles: (n) => `Файлы (${n})`, bDialog: 'Весь диалог',
+      openChatHint: (id) => `Спросите агента: «открой чат ${id} в журнале» — инструмент journal_session. Или: node journal.mjs session ${id}`,
+      areaKicker: 'Область проекта', rootFiles: '(файлы в корне проекта)', bAreaChats: 'Чаты, которые здесь работали', bRecentCommits: 'Последние коммиты',
+      // tasks and the project's dashboard
+      agoUnderHour: 'меньше часа назад', agoHours: (h) => `${count(h, 'hours')} назад`, agoDays: (n) => `${count(n, 'days')} назад`,
+      owner: { agent: 'агент', human: 'человек', external: 'снаружи' },
+      status: { in_progress: 'в работе', now: 'сейчас', waiting: 'ждёт', next: 'следом', later: 'потом', done: 'закрыта' },
+      numFocus: 'в фокусе', numWaiting: 'ждёт', numQueue: 'в очереди', numTaken: 'в работе у чатов',
+      plateFiles: (f, human) => `Задачи — файлы ${f.dir}/ в ${f.ref} (${f.head}), читаются при каждом открытии. Свободных для агента ${f.counts.free}, на стороне «${human}» ${f.counts.human}.`,
+      plateRest: (ago) => ` Остальное — из панели проекта, она обновлена ${ago}.`,
+      plateDash: (when, ago) => `Панель проекта обновлена ${when} (${ago}).`,
+      plateBehind: (commits, chats) => ` После этого — ${commits} и ${chats}: что именно — в «Задачах».`,
+      nothingSince: 'После этого ничего не менялось.', nothingSinceDash: 'После обновления панели ничего не менялось.',
+      tasksError: 'Задачи или панель проекта не удалось прочитать: ',
+      findTask: 'Найти задачу, решение или переключатель', colFocus: 'Фокус', colWait: 'Ждёт', colQueue: 'Очередь', queueMore: 'Показать всю очередь',
+      cardPriority: (p) => `приоритет: ${p}`, cardBlocking: 'блокирует', cardKey: (key) => `ключ ${key}`, cardWhere: 'где: ',
+      copyTitle: 'Текст для нового чата — в буфер обмена', copied: 'Скопировано ✓', copyFailed: 'Не скопировалось', copyTask: 'Скопировать задачу', copyList: 'Скопировать весь список для чата',
+      urgent: 'срочно', takenBy: 'в работе: ', unnamedChat: 'чат без имени', checkPrefix: 'Проверить: ',
+      closedInBranch: (branch, closed) => `закрыта в ветке ${branch}${closed ? ` (${closed})` : ''} — ждёт слияния`,
+      sourceIs: (s) => `источник: ${s}`, sinceDate: (date) => `с ${date}`,
+      // the text a copy button puts on the clipboard for a new chat
+      howToTake: (w) => `Как брать задачу: в своей ветке ${w.status}: ${w.inProgress} и ${w.session}: <имя чата> в файле задачи, сразу коммит; закрыть там же, где исправление (${w.status}: ${w.done}, ${w.closed}: <дата> <коммит>).`,
+      projectRules: (readme) => ` Правила проекта — ${readme}.`,
+      pContinue: (name, project) => `Продолжи работу над ${name} (${project}).`,
+      pTask: 'ЗАДАЧА:', pKey: 'КЛЮЧ:', pFile: 'файл', pGroup: 'ГРУППА:', pDo: 'ЧТО СДЕЛАТЬ:', pCheck: 'ПРОВЕРИТЬ:', pSource: 'ИСТОЧНИК:', unnamed: 'без имени',
+      pTaken: (session, branch) => `УЖЕ В РАБОТЕ: чат «${session}», ветка ${branch} — сначала спроси его, чтобы не делать второй раз.`,
+      pTakenStale: (session, branch, ago) => `ОТМЕЧЕНА ВЗЯТОЙ ${ago}: чат «${session}», ветка ${branch}. Проверь git log файла задачи и ветки: если свежих коммитов нет, тот чат, скорее всего, занят другим — тогда бери её и сообщи об этом; ответа не жди.`,
+      pClosed: (branch) => `УЖЕ ЗАКРЫТА в ветке ${branch} — проверь, не ждёт ли она только слияния.`,
+      pNumbers: 'Цифры в задаче — снимок на момент её постановки: сначала пересчитай по факту.',
+      listHead: (name, when, at, focus, wait, queue) => `Задачи ${name} на ${when} (${at}): в фокусе ${focus}, ждёт ${wait}, в очереди ${queue}.`,
+      listFocus: 'В ФОКУСЕ:', listWait: 'ЖДЁТ:', listQueue: 'В ОЧЕРЕДИ:',
+      listEach: (dir) => `Каждая задача — файл ${dir}/<ключ>.md.`, listGroupFirst: (group) => ` Сначала — группа «${group}».`, listAsk: ' Что предлагаешь взять следующим и почему?',
+      // the tasks view
+      dashFrom: 'Блоки, решения и остальное ниже — из панели проекта, она обновлена ', sinceThen: 'После этого: ', notInDash: ' — этого в панели ещё нет.',
+      filesKicker: (dir, ref) => `Задачи · файлы ${dir}/ в ${ref} и в ветках · читаются при каждом открытии`,
+      filesHead: (open, taken, free) => `Открыто ${open}: в работе у чатов ${taken}, свободных для агента ${free}`,
+      humanSide: (label, n) => `на стороне «${label}» ${n}`, byGroup: (s) => `по группам: ${s}`,
+      closedWaiting: (n) => `закрыто в ветках, ждёт слияния: ${n}`, newInBranches: (n) => `новых в ветках: ${n}`,
+      dashKicker: 'Панель проекта · читается при каждом открытии', dashUpdated: (when, ago) => `Обновлена ${when} — ${ago}`,
+      commitLine: (hash, subject) => `коммит ${hash} · ${subject}`,
+      newTasksInBranches: (n) => `новые задачи в ветках (${n})`, chatsSinceDash: (n) => `чаты после обновления панели (${n})`,
+      turnsAfter: (n) => `${count(n, 'turns')} после`, commitsSinceDash: (n) => `коммиты после обновления панели (${n})`,
+      dashSourceFile: 'Исходный файл панели',
+      branchIs: (branch) => `ветка ${branch}`, liveUnpushed: 'Не отправлено', toUpstream: (upstream) => `в ${upstream}`, noUpstream: 'нет удалённой ветки',
+      liveUnmerged: 'Веток не слито', intoBranch: (branch) => `в ${branch}`, liveLast: 'Последний коммит', liveNow: ' · сейчас',
+      groupsTitle: 'Готовность по группам', blocksTitle: 'Готовность по блокам',
+      ratedByDash: 'оценка из панели проекта', ratedAvg: (pct) => `оценка из панели проекта, средняя ${pct}`,
+      decisionsTitle: 'Решения', decisionsHint: 'Что решено и почему — новые сверху', table: 'Таблица',
+      flagsTitle: 'Переключатели', flagsHint: 'Что сейчас включено и что это значит', flagOn: 'вкл', flagOff: 'выкл',
+      docsTitle: 'Где что лежит',
+      srcFiles: (f, w) => `Задачи — файлы ${f.dir}/<ключ>.md в ${f.ref}; их ведут сами чаты: взял — ${w.status}: ${w.inProgress} в своей ветке, закрыл — ${w.status}: ${w.done} в ветке исправления.`,
+      srcRest: (file) => ` Остальное на этой странице — из ${file}.`,
+      srcDash: (file) => `Источник раздела: ${file}. Журнал его только показывает и добавляет то, что случилось после.`,
+    },
+  };
+  // 'ru-RU' or 'RU' still mean Russian; a language the page has no table for gets English.
+  const LANG = (() => { const code = String(D.ui ?? '').toLowerCase().split('-')[0]; return Object.hasOwn(UI, code) ? code : 'en'; })();
+  const tableOf = (key) => (Object.hasOwn(UI[LANG], key) ? UI[LANG] : UI.en);
+  const tr = (key, ...args) => { const v = tableOf(key)[key]; return typeof v === 'function' ? v(...args) : v ?? key; };
+  // The forms and the rule come from the same table, so an English fallback is never bent by Russian grammar.
+  const word = (n, key) => { const table = tableOf(key); return table.$plural(n, ...table[key]); };
+  const count = (n, key) => `${n} ${word(n, key)}`;
+
   const AGENT = { claude: 'Claude Code', cowork: 'Cowork', codex: 'Codex' };
-  const VIA = { cwd: 'работал в папке проекта', folder: 'папка выбрана в Cowork', edits: 'правил файлы проекта из другой папки', commits: 'коммитил в проект' };
-  const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const VIA = tr('via');
+  const MONTHS = tr('months');
   const d = (ts) => new Date(ts);
   const fmtDay = (ts) => { const x = d(ts); return `${x.getDate()} ${MONTHS[x.getMonth()]}`; };
   const fmt = (ts) => { const x = d(ts); return `${fmtDay(ts)}, ${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`; };
   const dayKey = (ts) => { const x = d(ts); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
-  const plural = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? b : c; };
-  const areaLabel = (i) => D.areas[i]?.label ?? '?';
+  // The server names the root area in its own words; the page names it in the page's language.
+  const areaName = (area) => (area.key === '' ? tr('areaRoot') : area.label);
+  const areaLabel = (i) => (D.areas[i] ? areaName(D.areas[i]) : null) ?? '?';
   const now = Date.now();
+
+  // ------------------------------------------------ static text
+  // The markup carries English placeholders; only the element's own text node is rewritten, so the
+  // icons and counters inside it stay where they are.
+  document.documentElement.lang = LANG;
+  for (const n of $$('[data-i18n]')) {
+    const text = [...n.childNodes].find((x) => x.nodeType === Node.TEXT_NODE && x.nodeValue.trim());
+    if (text) text.nodeValue = text.nodeValue.replace(text.nodeValue.trim(), () => tr(n.dataset.i18n));
+  }
+  for (const a of ['title', 'aria-label', 'placeholder']) for (const n of $$(`[data-i18n-${a}]`)) n.setAttribute(a, tr(n.getAttribute(`data-i18n-${a}`)));
 
   // ------------------------------------------------ theme
   try { const t = localStorage.getItem('journal-theme'); if (t) document.documentElement.dataset.theme = t; else if (matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light'; } catch {}
@@ -491,11 +714,11 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
   for (const cm of D.commits) for (const a of cm[3]) areaCommits[a]?.push(cm);
 
   $('#brand-project').textContent = D.name;
-  $('#foot-synced').textContent = D.synced ? `обновлён ${fmt(D.synced)}` : 'ещё не обновлялся';
-  document.title = `${D.name} — журнал проекта`;
+  $('#foot-synced').textContent = D.synced ? tr('synced', fmt(D.synced)) : tr('neverSynced');
+  document.title = `${D.name} — ${tr('brand')}`;
 
   // ------------------------------------------------ navigation
-  const TITLES = { center: ['Пространство', 'Центр управления', 'Состояние проекта и последняя работа'], universe: ['Оркестрация', 'Вселенная', 'Чаты, области проекта и связи между ними'], feed: ['Оркестрация', 'Лента', 'Вся работа по дням'], tasks: ['Оркестрация', 'Задачи', 'Все задачи проекта — обновляются сами'] };
+  const TITLES = { center: [tr('navWorkspace'), tr('viewCenter'), tr('subCenter')], universe: [tr('navOrchestration'), tr('viewUniverse'), tr('subUniverse')], feed: [tr('navOrchestration'), tr('viewFeed'), tr('subFeed')], tasks: [tr('navOrchestration'), tr('viewTasks'), tr('subTasks')] };
   let drawn = { universe: false, feed: false, tasks: false };
   const go = (name) => {
     for (const b of $$('.nav button')) { if (b.dataset.view === name) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }
@@ -512,23 +735,23 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
 
   // ------------------------------------------------ center
   const first = chats[0]?.started, last = chats.at(-1)?.ended;
-  $('#hero-title').append(D.name, ' — ', el('em', { text: 'вся работа в одном поле зрения.' }));
+  $('#hero-title').append(D.name, ' — ', el('em', { text: tr('heroEm') }));
   $('#top-sub').textContent = TITLES.center[2];
   const byAgent = {}; for (const c of chats) byAgent[c.agent] = (byAgent[c.agent] ?? 0) + 1;
   const userTurns = chats.reduce((s, c) => s + (c.users || 0), 0);
   const stats = [
-    ['Чатов', chats.length, Object.entries(byAgent).map(([a, n]) => `${AGENT[a] ?? a} ${n}`).join(' · ')],
-    ['Ваших реплик', userTurns, 'в этих чатах'],
-    ['Коммитов', D.commits.length, D.commits.length ? `последний ${fmtDay(D.commits.at(-1)[1])}` : ''],
-    ['Первый чат', first ? fmtDay(first) : '—', first ? `история с ${d(first).getFullYear()} года` : ''],
+    [tr('statChats'), chats.length, Object.entries(byAgent).map(([a, n]) => `${AGENT[a] ?? a} ${n}`).join(' · ')],
+    [tr('statTurns'), userTurns, tr('statTurnsNote')],
+    [tr('statCommits'), D.commits.length, D.commits.length ? tr('latestOn', fmtDay(D.commits.at(-1)[1])) : ''],
+    [tr('statFirst'), first ? fmtDay(first) : '—', first ? tr('historySince', d(first).getFullYear()) : ''],
   ];
   for (const [label, value, note] of stats) $('#stats').append(el('div', { class: 'card stat' }, el('div', { class: 'label', text: label }), el('div', { class: 'value', text: String(value) }), el('div', { class: 'note', text: note })));
 
   const chatRow = (c, extra) => el('button', { class: 'row', on: { click: () => inspectChat(c) } },
     el('span', { class: `agent ${c.agent}`, title: AGENT[c.agent] }),
-    el('span', { class: 't' }, el('b', { text: c.title || '(без названия)' }), el('small', { text: `${fmt(c.ended)} · ${AGENT[c.agent] ?? c.agent}${extra ? ' · ' + extra : ''}` })));
+    el('span', { class: 't' }, el('b', { text: c.title || tr('untitled') }), el('small', { text: `${fmt(c.ended)} · ${AGENT[c.agent] ?? c.agent}${extra ? ' · ' + extra : ''}` })));
   const latest = [...chats].sort((a, b) => b.ended.localeCompare(a.ended)).slice(0, 6);
-  for (const c of latest) $('#latest').append(chatRow(c, c.commits.length ? `${c.commits.length} ${plural(c.commits.length, 'коммит', 'коммита', 'коммитов')}` : ''));
+  for (const c of latest) $('#latest').append(chatRow(c, c.commits.length ? count(c.commits.length, 'commits') : ''));
 
   // weeks
   (() => {
@@ -548,8 +771,8 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     all.forEach((w, i) => {
       const e = weeks.get(w) ?? { c: 0, g: 0 };
       const x = pad + i * bw, hc = (e.c / maxC) * (half - 6), hg = (e.g / maxG) * (half - 6);
-      svg.append(el('svg:rect', { x: x + 1, y: half - hc, width: Math.max(1, bw - 2), height: hc, rx: 2, fill: 'var(--tangerine)' }, el('svg:title', { text: `неделя с ${fmtDay(w)}: чатов ${e.c}` })));
-      svg.append(el('svg:rect', { x: x + 1, y: half + 6, width: Math.max(1, bw - 2), height: hg, rx: 2, fill: 'var(--cyan)', opacity: .8 }, el('svg:title', { text: `неделя с ${fmtDay(w)}: коммитов ${e.g}` })));
+      svg.append(el('svg:rect', { x: x + 1, y: half - hc, width: Math.max(1, bw - 2), height: hc, rx: 2, fill: 'var(--tangerine)' }, el('svg:title', { text: tr('weekChats', fmtDay(w), e.c) })));
+      svg.append(el('svg:rect', { x: x + 1, y: half + 6, width: Math.max(1, bw - 2), height: hg, rx: 2, fill: 'var(--cyan)', opacity: .8 }, el('svg:title', { text: tr('weekCommits', fmtDay(w), e.g) })));
       const dt = d(w);
       if (i === 0 || dt.getDate() <= 7) svg.append(el('svg:text', { x, y: H - 4, class: 'tick', text: MONTHS[dt.getMonth()] }));
     });
@@ -560,7 +783,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     const since = now - 14 * 864e5;
     const hot = D.areas.map((a, i) => ({ i, n: areaChats[i].filter(([c]) => d(c.ended).getTime() >= since).length })).filter((x) => x.n).sort((a, b) => b.n - a.n).slice(0, 9);
     const max = Math.max(1, ...hot.map((h) => h.n));
-    if (!hot.length) $('#hot').append(el('div', { class: 'muted', text: 'За 14 дней чатов не было.' }));
+    if (!hot.length) $('#hot').append(el('div', { class: 'muted', text: tr('hotNone') }));
     for (const h of hot) $('#hot').append(el('div', { class: 'bar-line', role: 'button', tabindex: 0, on: { click: () => inspectArea(h.i), keydown: (e) => e.key === 'Enter' && inspectArea(h.i) } },
       el('div', {}, el('div', { class: 'name', text: D.areas[h.i].key || areaLabel(h.i), title: D.areas[h.i].key }), el('div', { class: 'track' }, el('div', { class: 'fill', style: `width:${(h.n / max) * 100}%` }))),
       el('div', { class: 'num', text: String(h.n) })));
@@ -571,7 +794,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     const svg = $('#hero-orbit');
     for (const r of [44, 88, 132]) svg.append(el('svg:circle', { r, class: 'ring' }));
     svg.append(el('svg:circle', { r: 20, fill: 'var(--carbon)', stroke: 'var(--tangerine)', 'stroke-opacity': .6 }));
-    svg.append(el('svg:text', { y: 4, class: 'center-sub', text: 'hub' }));
+    svg.append(el('svg:text', { y: 4, class: 'center-sub', text: tr('orbitHub') }));
     const sample = chats.filter((_, i) => i % Math.max(1, Math.round(chats.length / 14)) === 0).slice(0, 14);
     sample.forEach((c, i) => {
       const r = [88, 132][i % 2], a = (i / sample.length) * Math.PI * 2 - Math.PI / 2;
@@ -635,7 +858,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     const center = el('svg:g', { class: 'node', on: { click: () => closeInspector() } },
       el('svg:circle', { r: 46, fill: 'var(--carbon)', stroke: 'var(--tangerine)', 'stroke-opacity': .7 }),
       el('svg:text', { class: 'center-label', y: -2, text: D.name.length > 18 ? D.name.slice(0, 17) + '…' : D.name }),
-      el('svg:text', { class: 'center-sub', y: 14, text: `${chats.length} ${plural(chats.length, 'чат', 'чата', 'чатов')}` }));
+      el('svg:text', { class: 'center-sub', y: 14, text: count(chats.length, 'chats') }));
     root.append(center);
     const areasG = el('svg:g');
     root.append(areasG);
@@ -645,10 +868,10 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
       // Labels point outwards, into the free band between the two rings.
       const right = Math.cos(p.a) >= 0;
       const lx = Math.cos(p.a) * (R_AREA + p.r + 8), ly = Math.sin(p.a) * (R_AREA + p.r + 8) + 4;
-      const g = el('svg:g', { class: 'node', 'data-area': i, tabindex: 0, role: 'button', 'aria-label': `Область ${area.key || area.label}` ,
-        on: { click: () => inspectArea(i), keydown: (e) => e.key === 'Enter' && inspectArea(i), mousemove: (e) => showTip(e, area.key || area.label, `${areaChats[i].length} ${plural(areaChats[i].length, 'чат', 'чата', 'чатов')} · ${areaCommits[i].length} ${plural(areaCommits[i].length, 'коммит', 'коммита', 'коммитов')}`), mouseleave: hideTip, mouseenter: () => highlight({ area: i }), } },
+      const g = el('svg:g', { class: 'node', 'data-area': i, tabindex: 0, role: 'button', 'aria-label': tr('areaAria', area.key || areaName(area)) ,
+        on: { click: () => inspectArea(i), keydown: (e) => e.key === 'Enter' && inspectArea(i), mousemove: (e) => showTip(e, area.key || areaName(area), `${count(areaChats[i].length, 'chats')} · ${count(areaCommits[i].length, 'commits')}`), mouseleave: hideTip, mouseenter: () => highlight({ area: i }), } },
         el('svg:circle', { cx: p.x, cy: p.y, r: p.r, fill: 'var(--mint)' }),
-        el('svg:text', { class: 'area-label', x: lx, y: ly, 'text-anchor': right ? 'start' : 'end', text: area.label }));
+        el('svg:text', { class: 'area-label', x: lx, y: ly, 'text-anchor': right ? 'start' : 'end', text: areaName(area) }));
       g.addEventListener('mouseleave', () => highlight(uState.selected));
       areasG.append(g);
     });
@@ -658,8 +881,8 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     for (const c of chats) {
       const p = pos.chats[c.i];
       const color = c.agent === 'cowork' ? 'var(--periwinkle)' : c.agent === 'codex' ? 'var(--cyan)' : 'var(--tangerine)';
-      const g = el('svg:g', { class: 'node', 'data-chat': c.i, tabindex: 0, role: 'button', 'aria-label': `Чат ${c.title}`,
-        on: { click: () => inspectChat(c), keydown: (e) => e.key === 'Enter' && inspectChat(c), mousemove: (e) => showTip(e, c.title || '(без названия)', `${fmt(c.started)} · ${AGENT[c.agent] ?? c.agent} · ${c.users || 0} ${plural(c.users || 0, 'реплика', 'реплики', 'реплик')} · ${c.commits.length} комм.`), mouseleave: hideTip, mouseenter: () => highlight({ chat: c.i }) } },
+      const g = el('svg:g', { class: 'node', 'data-chat': c.i, tabindex: 0, role: 'button', 'aria-label': tr('chatAria', c.title),
+        on: { click: () => inspectChat(c), keydown: (e) => e.key === 'Enter' && inspectChat(c), mousemove: (e) => showTip(e, c.title || tr('untitled'), `${fmt(c.started)} · ${AGENT[c.agent] ?? c.agent} · ${count(c.users || 0, 'turns')} · ${tr('commitsShort', c.commits.length)}`), mouseleave: hideTip, mouseenter: () => highlight({ chat: c.i }) } },
         el('svg:circle', { cx: p.x, cy: p.y, r: 3.5 + 6 * Math.sqrt((c.users || 0) / maxU), fill: color }));
       g.addEventListener('mouseleave', () => highlight(uState.selected));
       chatsG.append(g);
@@ -702,7 +925,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
       const c = chats[+e.dataset.c];
       e.style.display = visibleChat(c) && !svg.querySelector(`[data-chat="${c.i}"]`).classList.contains('dim') ? '' : 'none';
     }
-    $('#u-meta').replaceChildren(el('span', { class: 'ok', text: '● проверенный срез журнала' }), el('span', { text: `видно ${shown} из ${chats.length} чатов` }), el('span', { text: `областей ${D.areas.length}` }), el('span', { text: D.synced ? `обновлён ${fmt(D.synced)}` : '' }));
+    $('#u-meta').replaceChildren(el('span', { class: 'ok', text: tr('uVerified') }), el('span', { text: tr('uShown', shown, chats.length) }), el('span', { text: tr('uAreas', D.areas.length) }), el('span', { text: D.synced ? tr('synced', fmt(D.synced)) : '' }));
   }
 
   function applyView() { const v = uState.view; $('#universe').setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`); }
@@ -745,7 +968,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     for (const cm of D.commits) at(dayKey(cm[1])).commits.push(cm);
     return [...m].sort((a, b) => b[0].localeCompare(a[0]));
   })();
-  const WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  const WEEKDAYS = tr('weekdays');
   function renderFeed() {
     const box = $('#feed');
     const batch = days.slice(feedShown, feedShown + 20);
@@ -753,16 +976,16 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
       const dt = new Date(key + 'T12:00:00');
       const day = el('div', { class: 'day' },
         el('div', { class: 'day-head' }, el('b', { text: `${WEEKDAYS[dt.getDay()]}, ${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}` }),
-          el('span', { text: `${v.chats.length} ${plural(v.chats.length, 'чат', 'чата', 'чатов')} · ${v.commits.length} ${plural(v.commits.length, 'коммит', 'коммита', 'коммитов')}` })));
+          el('span', { text: `${count(v.chats.length, 'chats')} · ${count(v.commits.length, 'commits')}` })));
       for (const c of v.chats.sort((a, b) => a.started.localeCompare(b.started))) {
         day.append(el('button', { class: 'row feed-chat', on: { click: () => inspectChat(c) } },
           el('span', { class: `agent ${c.agent}` }),
-          el('span', { class: 't' }, el('b', { text: c.title || '(без названия)' }),
-            el('small', { text: `${fmt(c.started)} · ${AGENT[c.agent] ?? c.agent} · ${c.areas.slice(0, 3).map(([a]) => areaLabel(a)).join(', ') || 'без правок файлов'}` }),
-            c.first ? el('small', { class: 'first', text: '«' + c.first.slice(0, 220) + (c.first.length > 220 ? '…' : '') + '»' }) : null)));
+          el('span', { class: 't' }, el('b', { text: c.title || tr('untitled') }),
+            el('small', { text: `${fmt(c.started)} · ${AGENT[c.agent] ?? c.agent} · ${c.areas.slice(0, 3).map(([a]) => areaLabel(a)).join(', ') || tr('noFileEdits')}` }),
+            c.first ? el('small', { class: 'first', text: tr('quote', c.first.slice(0, 220) + (c.first.length > 220 ? '…' : '')) }) : null)));
       }
       if (v.commits.length) {
-        const det = el('details', { class: 'day-commits' }, el('summary', { text: `коммиты дня (${v.commits.length})` }));
+        const det = el('details', { class: 'day-commits' }, el('summary', { text: tr('dayCommits', v.commits.length) }));
         const ul = el('ul', { class: 'commits' });
         for (const cm of v.commits.slice().reverse().slice(0, 60)) ul.append(el('li', {}, el('code', { text: cm[0] }), cm[2]));
         det.append(ul);
@@ -772,7 +995,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     }
     feedShown += batch.length;
     $('#more').style.display = feedShown < days.length ? '' : 'none';
-    $('#f-meta').replaceChildren(el('span', { text: `дней с работой: ${days.length}` }), el('span', { text: `показано: ${feedShown}` }));
+    $('#f-meta').replaceChildren(el('span', { text: tr('feedDays', days.length) }), el('span', { text: tr('feedShown', feedShown) }));
   }
   $('#more').addEventListener('click', renderFeed);
 
@@ -793,15 +1016,15 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     return frag;
   };
   const plain = (text) => decode(String(text ?? '').replace(/<\/?[ib]>/g, ''));
-  const ago = (ts) => { const h = Math.round((now - d(ts).getTime()) / 36e5); return h < 1 ? 'меньше часа назад' : h < 48 ? `${h} ${plural(h, 'час', 'часа', 'часов')} назад` : `${Math.round(h / 24)} ${plural(Math.round(h / 24), 'день', 'дня', 'дней')} назад`; };
+  const ago = (ts) => { const h = Math.round((now - d(ts).getTime()) / 36e5); return h < 1 ? tr('agoUnderHour') : h < 48 ? tr('agoHours', h) : tr('agoDays', Math.round(h / 24)); };
 
   // Tasks kept as files (in the default branch, plus what other branches took or closed). When the
   // project has them, the three columns come from there and never go stale; the dashboard keeps the rest.
   // Field values arrive in neutral words; the project's profile may name owners, groups and areas.
   const F = T?.files ?? null;
   const LABELS = F?.labels ?? {};
-  const OWNER = { agent: 'агент', human: 'человек', external: 'снаружи', ...(LABELS.owner ?? {}) };
-  const STATUS = { in_progress: 'в работе', now: 'сейчас', waiting: 'ждёт', next: 'следом', later: 'потом', done: 'закрыта' };
+  const OWNER = { ...tr('owner'), ...(LABELS.owner ?? {}) };
+  const STATUS = tr('status');
   const PRIO = { high: 0, medium: 1, low: 2 };
   const AREA = LABELS.area ?? {};
   // The profile's group order says which group comes first; the first three get their own colour.
@@ -830,26 +1053,26 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     $('#nav-tasks').hidden = false;
     $('#center-tasks').hidden = false;
     const nums = F
-      ? [[F.counts.focus, 'в фокусе'], [F.counts.waiting, 'ждёт'], [F.counts.queue, 'в очереди'], [F.counts.taken, 'в работе у чатов']]
-      : [[C.focus?.length ?? 0, 'в фокусе'], [C.waiting?.length ?? 0, 'ждёт'], [C.queue?.length ?? 0, 'в очереди']];
+      ? [[F.counts.focus, tr('numFocus')], [F.counts.waiting, tr('numWaiting')], [F.counts.queue, tr('numQueue')], [F.counts.taken, tr('numTaken')]]
+      : [[C.focus?.length ?? 0, tr('numFocus')], [C.waiting?.length ?? 0, tr('numWaiting')], [C.queue?.length ?? 0, tr('numQueue')]];
     for (const [n, label] of nums) $('#center-tasks-nums').append(el('div', {}, el('b', { text: String(n) }), el('small', { text: label })));
     const behind = T.sinceCommits.length + T.sinceChats.length;
     $('#center-tasks-fresh').textContent = F
-      ? `Задачи — файлы ${F.dir}/ в ${F.ref} (${F.head}), читаются при каждом открытии. Свободных для агента ${F.counts.free}, на стороне «${OWNER.human}» ${F.counts.human}.` + (T.since ? ` Остальное — из панели проекта, она обновлена ${ago(T.since)}.` : '')
-      : `Панель проекта обновлена ${fmt(T.since)} (${ago(T.since)}).` + (behind ? ` После этого — ${T.sinceCommits.length} ${plural(T.sinceCommits.length, 'коммит', 'коммита', 'коммитов')} и ${T.sinceChats.length} ${plural(T.sinceChats.length, 'чат', 'чата', 'чатов')}: что именно — в «Задачах».` : ' После этого ничего не менялось.');
+      ? tr('plateFiles', F, OWNER.human) + (T.since ? tr('plateRest', ago(T.since)) : '')
+      : tr('plateDash', fmt(T.since), ago(T.since)) + (behind ? tr('plateBehind', count(T.sinceCommits.length, 'commits'), count(T.sinceChats.length, 'chats')) : ' ' + tr('nothingSince'));
   } else if (D.tasks?.error) {
     $('#center-tasks').hidden = false;
-    $('#center-tasks-fresh').textContent = 'Задачи или панель проекта не удалось прочитать: ' + D.tasks.error;
+    $('#center-tasks-fresh').textContent = tr('tasksError') + D.tasks.error;
   }
 
   // A card from the dashboard file: {t: title, d: text, f: where, id, pri, wait, c: 'stop' when it blocks}.
   function taskCard(t, kind) {
     const card = el('div', { class: `task ${kind === 'wait' ? (t.c === 'stop' ? 'stop' : 'warn') : kind === 'focus' ? 'focus' : ''}`, tabindex: 0, role: 'button', 'data-find': plain(`${t.t} ${t.d} ${t.wait ?? ''}`).toLowerCase() });
     card.append(el('div', { class: 'tt' }, rich(t.t)));
-    const meta = [t.pri ? `приоритет: ${t.pri}` : null, t.wait ?? null, t.c === 'stop' ? 'блокирует' : null, t.id ? `ключ ${t.id}` : null].filter(Boolean);
+    const meta = [t.pri ? tr('cardPriority', t.pri) : null, t.wait ?? null, t.c === 'stop' ? tr('cardBlocking') : null, t.id ? tr('cardKey', t.id) : null].filter(Boolean);
     if (meta.length) card.append(el('div', { class: 'tm', text: meta.join(' · ') }));
     const body = el('div', { class: 'td' }, rich(t.d));
-    if (t.f) body.append(el('div', { class: 'tm', text: 'где: ' + plain(t.f) }));
+    if (t.f) body.append(el('div', { class: 'tm', text: tr('cardWhere') + plain(t.f) }));
     card.append(body);
     const toggle = () => card.classList.toggle('open');
     card.addEventListener('click', toggle);
@@ -866,36 +1089,42 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     a.remove(); return ok;
   }
   function copyButton(label, textOf) {
-    const b = el('button', { class: 'copy-btn', type: 'button', title: 'Текст для нового чата — в буфер обмена', text: label });
+    const b = el('button', { class: 'copy-btn', type: 'button', title: tr('copyTitle'), text: label });
     b.addEventListener('click', async (e) => {
       e.stopPropagation();
       const ok = await copyText(textOf());
-      b.textContent = ok ? 'Скопировано ✓' : 'Не скопировалось'; b.classList.toggle('ok', ok);
+      b.textContent = ok ? tr('copied') : tr('copyFailed'); b.classList.toggle('ok', ok);
       setTimeout(() => { b.textContent = label; b.classList.remove('ok'); }, 1800);
     });
     b.addEventListener('keydown', (e) => e.stopPropagation());
     return b;
   }
-  const howToTake = () => `Как брать задачу: в своей ветке ${W.status}: ${W.inProgress} и ${W.session}: <имя чата> в файле задачи, сразу коммит; закрыть там же, где исправление (${W.status}: ${W.done}, ${W.closed}: <дата> <коммит>).` + (F.readme ? ` Правила проекта — ${F.readme}.` : '');
+  // The labels pTask and pKey (TASK:, KEY: and their Russian forms) are meant for the server to
+  // recognise when it names the new chat: change them only together with the server.
+  const howToTake = () => tr('howToTake', W) + (F.readme ? tr('projectRules', F.readme) : '');
   const taskPrompt = (t) => [
-    `Продолжи работу над ${D.name} (${D.project}).`, '',
-    `ЗАДАЧА: ${t.title}`,
-    `КЛЮЧ: ${t.key} — файл ${F.dir}/${t.key}.md`,
-    t.group ? `ГРУППА: ${groupLabel(t.group)}` : null,
-    `ЧТО СДЕЛАТЬ: ${t.description}`,
-    t.check ? `ПРОВЕРИТЬ: ${t.check}` : null,
-    t.source ? `ИСТОЧНИК: ${t.source}` : null,
-    t.taken ? `УЖЕ В РАБОТЕ: чат «${t.taken.session || 'без имени'}», ветка ${t.taken.branch} — сначала спроси его, чтобы не делать второй раз.` : null,
-    t.closedIn ? `УЖЕ ЗАКРЫТА в ветке ${t.closedIn.branch} — проверь, не ждёт ли она только слияния.` : null,
+    tr('pContinue', D.name, D.project), '',
+    `${tr('pTask')} ${t.title}`,
+    `${tr('pKey')} ${t.key} — ${tr('pFile')} ${F.dir}/${t.key}.md`,
+    t.group ? `${tr('pGroup')} ${groupLabel(t.group)}` : null,
+    `${tr('pDo')} ${t.description}`,
+    t.check ? `${tr('pCheck')} ${t.check}` : null,
+    t.source ? `${tr('pSource')} ${t.source}` : null,
+    // A mark older than half a day with nothing newer usually belongs to a chat that moved on:
+    // asking it and waiting would stall the work (same threshold as journal_tasks).
+    t.taken ? (t.taken.since && now - d(t.taken.since).getTime() > 12 * 36e5
+      ? tr('pTakenStale', t.taken.session || tr('unnamed'), t.taken.branch, ago(t.taken.since))
+      : tr('pTaken', t.taken.session || tr('unnamed'), t.taken.branch)) : null,
+    t.closedIn ? tr('pClosed', t.closedIn.branch) : null,
     '',
     howToTake(),
-    'Цифры в задаче — снимок на момент её постановки: сначала пересчитай по факту.',
+    tr('pNumbers'),
   ].filter((x) => x !== null).join('\n');
   const listPrompt = () => {
-    const line = (t) => `- [${t.key}] ${t.title} (${[t.owner ? OWNER[t.owner] ?? t.owner : null, groupLabel(t.group)?.toLowerCase() ?? (t.priority === 'high' ? 'срочно' : null), t.taken ? 'в работе: ' + (t.taken.session || t.taken.branch) : null].filter(Boolean).join(', ')})`;
-    return [`Задачи ${D.name} на ${fmt(new Date().toISOString())} (${F.ref} ${F.head}): в фокусе ${fileCols.focus.length}, ждёт ${fileCols.wait.length}, в очереди ${fileCols.queue.length}.`, '',
-      'В ФОКУСЕ:', ...fileCols.focus.map(line), '', 'ЖДЁТ:', ...fileCols.wait.map(line), '', 'В ОЧЕРЕДИ:', ...fileCols.queue.map(line), '',
-      `Каждая задача — файл ${F.dir}/<ключ>.md.` + (GROUPS.length ? ` Сначала — группа «${groupLabel(GROUPS[0])}».` : '') + ' Что предлагаешь взять следующим и почему?'].join('\n');
+    const line = (t) => `- [${t.key}] ${t.title} (${[t.owner ? OWNER[t.owner] ?? t.owner : null, groupLabel(t.group)?.toLowerCase() ?? (t.priority === 'high' ? tr('urgent') : null), t.taken ? tr('takenBy') + (t.taken.session || t.taken.branch) : null].filter(Boolean).join(', ')})`;
+    return [tr('listHead', D.name, fmt(new Date().toISOString()), `${F.ref} ${F.head}`, fileCols.focus.length, fileCols.wait.length, fileCols.queue.length), '',
+      tr('listFocus'), ...fileCols.focus.map(line), '', tr('listWait'), ...fileCols.wait.map(line), '', tr('listQueue'), ...fileCols.queue.map(line), '',
+      tr('listEach', F.dir) + (GROUPS.length ? tr('listGroupFirst', groupLabel(GROUPS[0])) : '') + tr('listAsk')].join('\n');
   };
 
   // A task file: plain text only (the files are Markdown written by chats, nothing in them is markup).
@@ -905,15 +1134,15 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     card.append(el('div', { class: 'tt', text: t.title }));
     card.append(el('div', { class: 'tchips' },
       t.owner ? el('span', { class: `tchip o-${t.owner}`, text: OWNER[t.owner] ?? t.owner }) : null,
-      t.group ? el('span', { class: `tchip ${groupClass(t.group)}`, text: groupLabel(t.group) }) : t.priority === 'high' ? el('span', { class: 'tchip urgent', text: 'срочно' }) : null,
-      kind === 'queue' && t.status === 'later' ? el('span', { class: 'tchip later', text: 'потом' }) : null,
+      t.group ? el('span', { class: `tchip ${groupClass(t.group)}`, text: groupLabel(t.group) }) : t.priority === 'high' ? el('span', { class: 'tchip urgent', text: tr('urgent') }) : null,
+      kind === 'queue' && t.status === 'later' ? el('span', { class: 'tchip later', text: STATUS.later }) : null,
       t.area ? el('span', { class: 'tchip', text: AREA[t.area] ?? t.area }) : null,
-      copyButton('Скопировать задачу', () => taskPrompt(t))));
-    if (t.taken) card.append(el('div', { class: 'badge', text: `в работе: ${t.taken.session || 'чат без имени'} · ${t.taken.branch}${t.taken.since ? ' · ' + ago(t.taken.since) : ''}` }));
-    if (t.closedIn) card.append(el('div', { class: 'badge done', text: `закрыта в ветке ${t.closedIn.branch}${t.closedIn.closed ? ' (' + t.closedIn.closed + ')' : ''} — ждёт слияния` }));
+      copyButton(tr('copyTask'), () => taskPrompt(t))));
+    if (t.taken) card.append(el('div', { class: 'badge', text: `${tr('takenBy')}${t.taken.session || tr('unnamedChat')} · ${t.taken.branch}${t.taken.since ? ' · ' + ago(t.taken.since) : ''}` }));
+    if (t.closedIn) card.append(el('div', { class: 'badge done', text: tr('closedInBranch', t.closedIn.branch, t.closedIn.closed) }));
     const body = el('div', { class: 'td' }, t.description);
-    if (t.check) body.append(el('div', {}, el('em', { text: 'Проверить: ' + t.check })));
-    body.append(el('div', { class: 'tm', text: `ключ ${t.key} · ${F.dir}/${t.key}.md${t.source ? ' · источник: ' + t.source : ''}${t.created ? ' · с ' + t.created : ''}` }));
+    if (t.check) body.append(el('div', {}, el('em', { text: tr('checkPrefix') + t.check })));
+    body.append(el('div', { class: 'tm', text: `${tr('cardKey', t.key)} · ${F.dir}/${t.key}.md${t.source ? ' · ' + tr('sourceIs', t.source) : ''}${t.created ? ' · ' + tr('sinceDate', t.created) : ''}` }));
     card.append(body);
     const toggle = () => card.classList.toggle('open');
     card.addEventListener('click', toggle);
@@ -929,49 +1158,50 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     const fresh = $('#t-fresh');
     fresh.classList.toggle('stale', !F && stale);
     fresh.classList.toggle('ok', !!F || !stale);
-    const counted = () => el('span', {}, el('b', { text: `${T.sinceCommits.length} ${plural(T.sinceCommits.length, 'коммит', 'коммита', 'коммитов')}` }), ' и ', el('b', { text: `${T.sinceChats.length} ${plural(T.sinceChats.length, 'чат', 'чата', 'чатов')}` }));
-    const dashboardLine = T.since ? el('div', { class: 'since' }, F ? 'Блоки, решения и остальное ниже — из панели проекта, она обновлена ' : `Обновлена ${fmt(T.since)} — `, F ? el('span', { text: `${fmt(T.since)} (${ago(T.since)})` }) : null,
-      stale ? el('span', {}, F ? '. После этого: ' : 'после этого: ', counted(), ' — этого в панели ещё нет.') : el('b', { text: F ? '. После этого ничего не менялось.' : 'После обновления панели ничего не менялось.' })) : null;
+    const counted = () => el('span', {}, el('b', { text: count(T.sinceCommits.length, 'commits') }), tr('and'), el('b', { text: count(T.sinceChats.length, 'chats') }));
+    // Only the task-file view shows this line; without task files the dashboard has its own below.
+    const dashboardLine = F && T.since ? el('div', { class: 'since' }, tr('dashFrom'), el('span', { text: `${fmt(T.since)} (${ago(T.since)})` }),
+      stale ? el('span', {}, '. ' + tr('sinceThen'), counted(), tr('notInDash')) : el('b', { text: '. ' + tr('nothingSince') })) : null;
     const left = F
       ? el('div', {},
-        el('div', { class: 'kicker', text: `Задачи · файлы ${F.dir}/ в ${F.ref} и в ветках · читаются при каждом открытии` }),
-        el('h2', { text: `Открыто ${F.counts.open}: в работе у чатов ${F.counts.taken}, свободных для агента ${F.counts.free}` }),
-        el('div', { class: 'muted mono', text: `${F.ref} ${F.head} · на стороне «${OWNER.human}» ${F.counts.human}${groupCounts ? ` · по группам: ${groupCounts}` : ''}${F.counts.closedInBranches ? ` · закрыто в ветках, ждёт слияния: ${F.counts.closedInBranches}` : ''}${F.newInBranches.length ? ` · новых в ветках: ${F.newInBranches.length}` : ''}` }),
+        el('div', { class: 'kicker', text: tr('filesKicker', F.dir, F.ref) }),
+        el('h2', { text: tr('filesHead', F.counts.open, F.counts.taken, F.counts.free) }),
+        el('div', { class: 'muted mono', text: `${F.ref} ${F.head} · ${tr('humanSide', OWNER.human, F.counts.human)}${groupCounts ? ' · ' + tr('byGroup', groupCounts) : ''}${F.counts.closedInBranches ? ' · ' + tr('closedWaiting', F.counts.closedInBranches) : ''}${F.newInBranches.length ? ' · ' + tr('newInBranches', F.newInBranches.length) : ''}` }),
         dashboardLine)
       : el('div', {},
-        el('div', { class: 'kicker', text: 'Панель проекта · читается при каждом открытии' }),
-        el('h2', { text: `Обновлена ${fmt(T.since)} — ${ago(T.since)}` }),
-        T.committed ? el('div', { class: 'muted mono', text: `коммит ${T.committed.hash} · ${T.committed.subject}` }) : null,
-        el('div', { class: 'since' }, stale ? el('span', {}, 'После этого: ', counted(), ' — этого в панели ещё нет.') : el('b', { text: 'После обновления панели ничего не менялось.' })));
+        el('div', { class: 'kicker', text: tr('dashKicker') }),
+        el('h2', { text: tr('dashUpdated', fmt(T.since), ago(T.since)) }),
+        T.committed ? el('div', { class: 'muted mono', text: tr('commitLine', T.committed.hash, T.committed.subject) }) : null,
+        el('div', { class: 'since' }, stale ? el('span', {}, tr('sinceThen'), counted(), tr('notInDash')) : el('b', { text: tr('nothingSinceDash') })));
     if (F?.newInBranches.length) {
-      const det = el('details', {}, el('summary', { text: `новые задачи в ветках (${F.newInBranches.length})` }));
+      const det = el('details', {}, el('summary', { text: tr('newTasksInBranches', F.newInBranches.length) }));
       det.append(el('ul', { class: 'commits' }, ...F.newInBranches.map((b) => el('li', {}, el('code', { text: b.key }), `${b.title} · ${b.branch} · ${STATUS[b.status] ?? b.status}`))));
       left.append(det);
     }
     if (T.sinceChats.length) {
-      const det = el('details', { open: !F }, el('summary', { text: `чаты после обновления панели (${T.sinceChats.length})` }));
+      const det = el('details', { open: !F }, el('summary', { text: tr('chatsSinceDash', T.sinceChats.length) }));
       const list = el('div', { class: 'list' });
-      for (const c of T.sinceChats) { const full = byId.get(c.id); list.append(full ? chatRow(full, `${c.turns || 0} ${plural(c.turns || 0, 'реплика', 'реплики', 'реплик')} после`) : el('div', { class: 'row', text: c.title })); }
+      for (const c of T.sinceChats) { const full = byId.get(c.id); list.append(full ? chatRow(full, tr('turnsAfter', c.turns || 0)) : el('div', { class: 'row', text: c.title })); }
       det.append(list);
       left.append(det);
     }
     if (T.sinceCommits.length) {
-      const det = el('details', {}, el('summary', { text: `коммиты после обновления панели (${T.sinceCommits.length})` }));
+      const det = el('details', {}, el('summary', { text: tr('commitsSinceDash', T.sinceCommits.length) }));
       det.append(el('ul', { class: 'commits' }, ...T.sinceCommits.slice(0, 80).map(([h, ts, s]) => el('li', {}, el('code', { text: h }), `${fmt(ts)} · ${s}`))));
       left.append(det);
     }
-    fresh.replaceChildren(left, T.file ? el('a', { class: 'btn', href: 'file:///' + T.file.replace(/\\/g, '/'), target: '_blank', rel: 'noopener', text: 'Исходный файл панели' }) : el('span'));
+    fresh.replaceChildren(left, T.file ? el('a', { class: 'btn', href: 'file:///' + T.file.replace(/\\/g, '/'), target: '_blank', rel: 'noopener', text: tr('dashSourceFile') }) : el('span'));
 
     // live numbers straight from git
     const G = D.git;
     if (G) {
       const tiles = [
-        ['Коммитов', G.commits, `ветка ${G.branch}`],
-        ['Не отправлено', G.unpushed ?? '—', G.upstream ? `в ${G.upstream}` : 'нет удалённой ветки'],
-        ['Веток не слито', G.unmergedBranches, `в ${G.branch}`],
-        ['Последний коммит', G.last ? fmt(G.last.ts) : '—', G.last ? G.last.subject : ''],
+        [tr('statCommits'), G.commits, tr('branchIs', G.branch)],
+        [tr('liveUnpushed'), G.unpushed ?? '—', G.upstream ? tr('toUpstream', G.upstream) : tr('noUpstream')],
+        [tr('liveUnmerged'), G.unmergedBranches, tr('intoBranch', G.branch)],
+        [tr('liveLast'), G.last ? fmt(G.last.ts) : '—', G.last ? G.last.subject : ''],
       ];
-      $('#t-live').replaceChildren(...tiles.map(([l, v, n]) => el('div', { class: 'card stat' }, el('div', { class: 'label', text: l + ' · сейчас' }), el('div', { class: 'value', text: String(v) }), el('div', { class: 'note', text: n }))));
+      $('#t-live').replaceChildren(...tiles.map(([l, v, n]) => el('div', { class: 'card stat' }, el('div', { class: 'label', text: l + tr('liveNow') }), el('div', { class: 'value', text: String(v) }), el('div', { class: 'note', text: n }))));
     }
 
     // readiness per group and per block, as the dashboard rates them; a group without a percent
@@ -979,22 +1209,22 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     const readiness = (list, box) => {
       for (const g of list) {
         const rated = typeof g.p === 'number';
-        const card = el('div', { class: 'card block-card', tabindex: 0, role: 'button' }, el('div', { class: 'label mono muted', text: plain(g.n) }), el('div', { class: 'pct', text: rated ? `${g.p} %` : '—' }), rated ? el('div', { class: 'bar' }, el('i', { style: `width:${Math.max(0, Math.min(100, g.p))}%` })) : null, el('div', { class: 's' }, rich(g.s)));
+        const card = el('div', { class: 'card block-card', tabindex: 0, role: 'button' }, el('div', { class: 'label mono muted', text: plain(g.n) }), el('div', { class: 'pct', text: rated ? tr('percent', g.p) : '—' }), rated ? el('div', { class: 'bar' }, el('i', { style: `width:${Math.max(0, Math.min(100, g.p))}%` })) : null, el('div', { class: 's' }, rich(g.s)));
         card.addEventListener('click', () => card.classList.toggle('open'));
         box.append(card);
       }
     };
     const groups = Array.isArray(C.groups) ? C.groups : [];
     $('#t-groups-title').hidden = $('#t-groups').hidden = !groups.length;
-    $('#t-groups-note').textContent = groups.length ? 'оценка из панели проекта' : '';
+    $('#t-groups-note').textContent = groups.length ? tr('ratedByDash') : '';
     readiness(groups, $('#t-groups'));
     const blocks = Array.isArray(C.blocks) ? C.blocks : [];
     $('#t-blocks-title').hidden = $('#t-blocks').hidden = !blocks.length;
-    $('#t-blocks-note').textContent = blocks.length ? `оценка из панели проекта, средняя ${Math.round(blocks.reduce((s, m) => s + (m.p || 0), 0) / blocks.length)} %` : '';
+    $('#t-blocks-note').textContent = blocks.length ? tr('ratedAvg', tr('percent', Math.round(blocks.reduce((s, m) => s + (m.p || 0), 0) / blocks.length))) : '';
     readiness(blocks, $('#t-blocks'));
 
     // columns: from the task files when there are any, otherwise from the dashboard
-    if (F) $('#t-toolbar').append(copyButton('Скопировать весь список для чата', listPrompt));
+    if (F) $('#t-toolbar').append(copyButton(tr('copyList'), listPrompt));
     const card = F ? fileTaskCard : taskCard;
     const PRI = Object.fromEntries((T.priorityOrder ?? []).map((p, i) => [p, i]));
     const focus = F ? fileCols.focus : C.focus ?? [];
@@ -1018,7 +1248,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     const table = C.table;
     $('#c-table').hidden = !table;
     if (table) {
-      $('#t-table-title').textContent = plain(T.titles?.table ?? 'Таблица');
+      $('#t-table-title').textContent = plain(T.titles?.table ?? tr('table'));
       $('#t-ord-stamp').textContent = plain(table.stamp ?? '');
       for (const k of table.kpi ?? []) $('#t-ord-kpi').append(el('div', {}, el('b', { text: plain(k.v) }), el('small', {}, rich(k.s))));
       const tbl = $('#t-ord');
@@ -1030,10 +1260,10 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     // flags and documents
     const flags = C.flags ?? [];
     $('#c-flags').hidden = !flags.length;
-    for (const f of flags) $('#t-flags').append(el('div', { class: 'flag', 'data-find': plain(`${f.n} ${f.s}`).toLowerCase() }, el('span', { class: `sw ${f.on ? 'on' : 'off'}`, text: f.on ? 'вкл' : 'выкл' }), el('div', {}, el('span', { class: 'mono', text: plain(f.n) }), el('small', {}, rich(f.s)))));
+    for (const f of flags) $('#t-flags').append(el('div', { class: 'flag', 'data-find': plain(`${f.n} ${f.s}`).toLowerCase() }, el('span', { class: `sw ${f.on ? 'on' : 'off'}`, text: f.on ? tr('flagOn') : tr('flagOff') }), el('div', {}, el('span', { class: 'mono', text: plain(f.n) }), el('small', {}, rich(f.s)))));
     $('#t-src').textContent = F
-      ? `Задачи — файлы ${F.dir}/<ключ>.md в ${F.ref}; их ведут сами чаты: взял — ${W.status}: ${W.inProgress} в своей ветке, закрыл — ${W.status}: ${W.done} в ветке исправления.` + (T.file ? ` Остальное на этой странице — из ${T.file}.` : '')
-      : `Источник раздела: ${T.file}. Журнал его только показывает и добавляет то, что случилось после.`;
+      ? tr('srcFiles', F, W) + (T.file ? tr('srcRest', T.file) : '')
+      : tr('srcDash', T.file);
     for (const x of C.docs ?? []) $('#t-docs').append(el('div', { class: 'dec' }, el('div', { class: 'mono', text: plain(x.n) }), el('div', { class: 'dy' }, rich(x.w))));
   }
   function applyTaskFilter() {
@@ -1046,7 +1276,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
   const insp = $('#inspector');
   function closeInspector() { $('#app').classList.remove('inspecting'); uState.selected = null; highlight(null); }
   function openInspector(...kids) {
-    insp.replaceChildren(el('button', { class: 'icon-btn close', 'aria-label': 'Закрыть', on: { click: closeInspector } }, '✕'), ...kids);
+    insp.replaceChildren(el('button', { class: 'icon-btn close', 'aria-label': tr('close'), on: { click: closeInspector } }, '✕'), ...kids);
     $('#app').classList.add('inspecting');
     insp.scrollTop = 0;
   }
@@ -1055,32 +1285,32 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
     uState.selected = { chat: c.i };
     if (drawn.universe) highlight(uState.selected);
     const files = el('ul', { class: 'files' }, ...c.files.slice(0, 25).map((f) => el('li', { text: f })));
-    if (c.fileCount > 25) files.append(el('li', { class: 'muted', text: `… и ещё ${c.fileCount - 25}` }));
+    if (c.fileCount > 25) files.append(el('li', { class: 'muted', text: tr('andMore', c.fileCount - 25) }));
     openInspector(
       el('div', { class: 'kicker', text: `${AGENT[c.agent] ?? c.agent} · ${VIA[c.via] ?? c.via}` }),
-      el('h2', { text: c.title || '(без названия)' }),
-      el('div', { class: 'dates', text: `${fmt(c.started)} → ${fmt(c.ended)} · ${c.users || 0} ${plural(c.users || 0, 'ваша реплика', 'ваши реплики', 'ваших реплик')}` }),
-      c.first ? block('С чего начали — ваши слова', el('div', { class: 'quote', text: c.first })) : null,
-      c.last ? block('Последний ответ агента', el('div', { class: 'quote agent-q', text: c.last })) : null,
-      c.areas.length ? block('Области проекта', el('div', { class: 'chips' }, ...c.areas.slice(0, 12).map(([a, n]) => el('button', { class: 'chip', title: D.areas[a].key, on: { click: () => inspectArea(a) }, text: `${areaLabel(a)} · ${n}` })))) : null,
-      c.commits.length ? block(`Коммиты чата (${c.commits.length})`, el('ul', { class: 'commits' }, ...c.commits.slice(0, 20).map(([h, s]) => el('li', {}, el('code', { text: h }), s)))) : null,
-      c.files.length ? block(`Файлы (${c.fileCount})`, files) : null,
-      block('Весь диалог', el('div', { class: 'id-line', text: `Спросите агента: «открой чат ${c.id.slice(0, 8)} в журнале» — инструмент journal_session. Или: node journal.mjs session ${c.id.slice(0, 8)}` })));
+      el('h2', { text: c.title || tr('untitled') }),
+      el('div', { class: 'dates', text: `${fmt(c.started)} → ${fmt(c.ended)} · ${count(c.users || 0, 'yourTurns')}` }),
+      c.first ? block(tr('bStart'), el('div', { class: 'quote', text: c.first })) : null,
+      c.last ? block(tr('bLast'), el('div', { class: 'quote agent-q', text: c.last })) : null,
+      c.areas.length ? block(tr('bAreas'), el('div', { class: 'chips' }, ...c.areas.slice(0, 12).map(([a, n]) => el('button', { class: 'chip', title: D.areas[a].key, on: { click: () => inspectArea(a) }, text: `${areaLabel(a)} · ${n}` })))) : null,
+      c.commits.length ? block(tr('bChatCommits', c.commits.length), el('ul', { class: 'commits' }, ...c.commits.slice(0, 20).map(([h, s]) => el('li', {}, el('code', { text: h }), s)))) : null,
+      c.files.length ? block(tr('bFiles', c.fileCount), files) : null,
+      block(tr('bDialog'), el('div', { class: 'id-line', text: tr('openChatHint', c.id.slice(0, 8)) })));
   }
   function inspectArea(i) {
     uState.selected = { area: i };
     if (drawn.universe) highlight(uState.selected);
     const area = D.areas[i];
     const list = el('div', { class: 'list' });
-    for (const [c, n] of [...areaChats[i]].sort((a, b) => b[0].ended.localeCompare(a[0].ended)).slice(0, 30)) list.append(chatRow(c, `${n} ${plural(n, 'файл', 'файла', 'файлов')}`));
+    for (const [c, n] of [...areaChats[i]].sort((a, b) => b[0].ended.localeCompare(a[0].ended)).slice(0, 30)) list.append(chatRow(c, count(n, 'files')));
     const commits = areaCommits[i].slice().reverse();
     openInspector(
-      el('div', { class: 'kicker', text: 'Область проекта' }),
-      el('h2', { text: area.label }),
-      el('div', { class: 'dates mono', text: area.key || '(файлы в корне проекта)' }),
-      el('div', { class: 'dates', text: `${areaChats[i].length} ${plural(areaChats[i].length, 'чат', 'чата', 'чатов')} · ${commits.length} ${plural(commits.length, 'коммит', 'коммита', 'коммитов')}${commits.length ? ` · последний ${fmtDay(commits[0][1])}` : ''}` }),
-      block('Чаты, которые здесь работали', list),
-      commits.length ? block('Последние коммиты', el('ul', { class: 'commits' }, ...commits.slice(0, 20).map((cm) => el('li', {}, el('code', { text: cm[0] }), `${fmtDay(cm[1])} · ${cm[2]}`)))) : null);
+      el('div', { class: 'kicker', text: tr('areaKicker') }),
+      el('h2', { text: areaName(area) }),
+      el('div', { class: 'dates mono', text: area.key || tr('rootFiles') }),
+      el('div', { class: 'dates', text: `${count(areaChats[i].length, 'chats')} · ${count(commits.length, 'commits')}${commits.length ? ' · ' + tr('latestOn', fmtDay(commits[0][1])) : ''}` }),
+      block(tr('bAreaChats'), list),
+      commits.length ? block(tr('bRecentCommits'), el('ul', { class: 'commits' }, ...commits.slice(0, 20).map((cm) => el('li', {}, el('code', { text: cm[0] }), `${fmtDay(cm[1])} · ${cm[2]}`)))) : null);
   }
   addEventListener('keydown', (e) => { if (e.key === 'Escape') closeInspector(); });
 
@@ -1088,7 +1318,7 @@ table.ord { font-size: 13.5px; } table.ord th { font-size: 11.5px; }
   // calling `journal.mjs view`); coming back to the tab after a while re-reads it, and the #section in
   // the address keeps the same view open.
   const loadedAt = Date.now();
-  $('#fresh-pill').textContent = `собрано ${fmt(D.generated)}`;
+  $('#fresh-pill').textContent = tr('built', fmt(D.generated));
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && Date.now() - loadedAt > 3 * 60 * 1000) location.reload();
   });
