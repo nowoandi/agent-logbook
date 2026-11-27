@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "agent-logbook",
-  "description": "Журнал проекта — плагин для Claude Code (и Codex): прошлые чаты и git log папки проекта",
+  "description": "Project journal - a plugin for Claude Code (and Codex): past chats and the git log of a project folder",
   "owner": {
     "name": "Andrej Hermann"
   },
@@ -9,8 +9,8 @@
     {
       "name": "agent-logbook",
       "source": "./",
-      "description": "Журнал проекта: поиск по прошлым чатам и git log, сводка в начале чата, задачи",
-      "version": "1.1.0",
+      "description": "Project journal: search past chats and git log, a brief at the start of a chat, tasks",
+      "version": "1.1.1",
       "category": "productivity"
     }
   ]

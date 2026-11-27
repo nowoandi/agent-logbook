@@ -30,7 +30,7 @@ try {
 const SCHEMA_VERSION = 2;
 // Raise whenever parsing or redaction changes, so every transcript is read again instead of
 // keeping old mistakes (7: a review found unredacted passwords and titles).
-const PARSER_VERSION = 10;
+const PARSER_VERSION = 11;
 const MAX_MESSAGE_CHARS = 20000;
 const HOME = os.homedir();
 const CLAUDE_PROJECTS = path.join(HOME, '.claude', 'projects');
@@ -89,9 +89,10 @@ function openDb({ readOnly = false } = {}) {
   // rebuilding it for each other.
   if ((Number(db.prepare("SELECT value FROM meta WHERE key = 'parser'").get()?.value) || 0) < PARSER_VERSION) {
     // Every transcript is read again; git history is rebuilt too, because redaction also covers it.
-    db.exec('DELETE FROM sources; DELETE FROM git_commits; DELETE FROM gitmsg;');
+    db.exec("DELETE FROM sources; DELETE FROM git_commits; DELETE FROM gitmsg; DELETE FROM meta WHERE key LIKE 'githead:%';");
     setMeta.run('parser', String(PARSER_VERSION));
     setMeta.run('vacuum', '1');
+    setMeta.run('reredact', '1');
   }
   return db;
 }
@@ -232,7 +233,9 @@ function redact(text) {
   return out;
 }
 
-const INJECTED_BLOCKS = /<(system-reminder|ide_opened_file|ide_selection|in-app-browser-context|environment_context|recommended_plugins|uploaded_files)(?:\s[^>]*)?>[\s\S]*?<\/\1>/g;
+// Codex Desktop puts automation runs (heartbeat) and notices of its built-in browser
+// (external_codex_apps_…) in the user's place; the block goes, any words around it stay.
+const INJECTED_BLOCKS = /<(system-reminder|ide_opened_file|ide_selection|in-app-browser-context|environment_context|recommended_plugins|uploaded_files|heartbeat|external_codex_apps_[a-z0-9_]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>/g;
 // Turns that sit in the user's place but were not written by the user: harness notices, messages
 // from other chats, Codex internal turns, «PLEASE IMPLEMENT THIS PLAN» typed by the Codex UI,
 // the opening of a compaction summary, and the «interrupted» marker.
@@ -573,6 +576,33 @@ function attribute(places, roots, hashIndex = new Map()) {
   return out;
 }
 
+/**
+ * After a parser change the loop above reads every live transcript again, but a chat whose transcripts
+ * are gone lives only in the journal and would keep the older, weaker redaction for good. Redaction
+ * only ever hides more, so applying it once more to every stored text is safe; live chats, just
+ * stored, come out unchanged. The same holds for the filter of the person's words.
+ */
+function reredactArchive(db) {
+  let changed = 0;
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    // A turn today's rules no longer count as the person's words leaves the archive too; the chat stays.
+    const drop = db.prepare('DELETE FROM msg WHERE rowid = ?');
+    const touched = new Set();
+    for (const r of db.prepare("SELECT rowid AS key, session_id, text FROM msg WHERE role = 'user'").all()) {
+      if (!cleanHumanText(r.text)) { drop.run(r.key); touched.add(r.session_id); changed++; }
+    }
+    const recount = db.prepare("UPDATE sessions SET user_messages = (SELECT count(*) FROM msg WHERE session_id = sessions.id AND role = 'user') WHERE id = ?");
+    for (const id of touched) recount.run(id);
+    const fix = (rows, update) => { for (const r of rows) { const text = clip(redact(r.text ?? '')); if (r.text != null && text !== r.text) { update.run(text, r.key); changed++; } } };
+    fix(db.prepare('SELECT rowid AS key, text FROM msg').all(), db.prepare('UPDATE msg SET text = ? WHERE rowid = ?'));
+    fix(db.prepare('SELECT id AS key, title AS text FROM sessions').all(), db.prepare('UPDATE sessions SET title = ? WHERE id = ?'));
+    fix(db.prepare("SELECT rowid AS key, subject AS text FROM commits").all(), db.prepare('UPDATE commits SET subject = ? WHERE rowid = ?'));
+    db.exec('COMMIT');
+  } catch (e) { db.exec('ROLLBACK'); throw e; }
+  return changed;
+}
+
 function removeSession(db, id) {
   for (const table of ['msg', 'files', 'commits', 'session_projects']) db.prepare(`DELETE FROM ${table} WHERE session_id = ?`).run(id);
   db.prepare('DELETE FROM sessions WHERE id = ?').run(id);
@@ -605,28 +635,50 @@ function titleFromText(firstUser) {
   return (text.split('\n').map((l) => l.trim()).find(Boolean) ?? '').slice(0, 90);
 }
 
-function store(db, s, projects, roots, keepOld) {
+/**
+ * What the journal holds of a chat, minus the turns today's rules no longer count as the person's
+ * words: a parser that learned to drop a notice drops it from the kept rows too.
+ */
+function storedMessages(db, id) {
+  return db.prepare("SELECT role, ts, text FROM msg WHERE session_id = ? AND role != 'title'").all(id)
+    .filter((m) => m.role !== 'user' || cleanHumanText(m.text))
+    .map((m) => ({ ...m, text: redact(m.text) }));
+}
+
+/**
+ * Returns true when the fresh parse had fewer turns than the journal and the old ones were kept.
+ * Such a parse does not replace the chat: a changed transcript format or a parser change would
+ * otherwise empty it, and once the app deletes its old transcripts the history is gone for good
+ * (finding 2 of the audit, 27.11.2026). The price is that a transcript really cut short keeps its
+ * old turns too.
+ */
+function store(db, s, projects, roots, vanished) {
   const key = (m) => `${m.role}|${m.ts}|${String(m.text).slice(0, 200)}`;
   let messages = s.messages.map((m) => ({ ...m, text: clip(redact(m.text)) }));
   let files = [...s.files];
   let commits = [...s.commits.values()];
   const own = roots.filter((r) => projects.some((p) => p.project === comparable(r)));
   let relFiles = files.map(([p, ts]) => [own.map((r) => relativeToProject(r, p)).find(Boolean), ts]).filter(([p]) => p);
-  if (keepOld) {
+  const old = storedMessages(db, s.id);
+  const shrunk = !vanished && old.length > messages.length;
+  if (vanished || shrunk) {
     const have = new Set(messages.map(key));
-    const old = db.prepare("SELECT role, ts, text FROM msg WHERE session_id = ? AND role != 'title'").all(s.id).map((m) => ({ ...m, text: redact(m.text) }));
     messages = [...messages, ...old.filter((m) => !have.has(key(m)))].sort((a, b) => String(a.ts ?? '').localeCompare(String(b.ts ?? '')));
     const haveFiles = new Set(relFiles.map(([p]) => p));
     relFiles = [...relFiles, ...db.prepare('SELECT path, ts FROM files WHERE session_id = ?').all(s.id).filter((f) => !haveFiles.has(f.path)).map((f) => [f.path, f.ts])];
     const haveCommits = new Set(commits.map((c) => c.hash));
     commits = [...commits, ...db.prepare('SELECT hash, subject, ts FROM commits WHERE session_id = ?').all(s.id).filter((c) => !haveCommits.has(c.hash))];
   }
+  // A shrunk parse may not know when the chat ran or what it was called; the journal still does.
+  const was = shrunk ? db.prepare('SELECT cwd, title, started, ended FROM sessions WHERE id = ?').get(s.id) : null;
   removeSession(db, s.id);
   const firstUser = messages.find((m) => m.role === 'user')?.text ?? '';
   // The title reaches every new chat through the start hook, so it is redacted like the dialog.
-  const title = redact(s.title ?? titleFromText(firstUser));
+  const title = redact(s.title ?? was?.title ?? titleFromText(firstUser));
+  const started = [s.started, was?.started].filter(Boolean).sort()[0] ?? null;
+  const ended = [s.ended, was?.ended].filter(Boolean).sort().pop() ?? null;
   db.prepare('INSERT OR REPLACE INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-    .run(s.id, s.agent, [...s.cwds][0] ?? s.folders[0] ?? null, title, s.started, s.ended, s.file, messages.filter((m) => m.role === 'user').length);
+    .run(s.id, s.agent, [...s.cwds][0] ?? s.folders[0] ?? was?.cwd ?? null, title, started, ended, s.file, messages.filter((m) => m.role === 'user').length);
   const insertProject = db.prepare('INSERT OR REPLACE INTO session_projects VALUES (?, ?, ?)');
   for (const p of projects) insertProject.run(s.id, p.project, p.via);
   const insertMsg = db.prepare('INSERT INTO msg(text, session_id, seq, role, ts) VALUES (?, ?, ?, ?, ?)');
@@ -637,6 +689,7 @@ function store(db, s, projects, roots, keepOld) {
   for (const [p, ts] of relFiles) insertFile.run(s.id, p, ts ?? null);
   const insertCommit = db.prepare('INSERT OR REPLACE INTO commits VALUES (?, ?, ?, ?)');
   for (const c of commits) insertCommit.run(s.id, c.hash, redact(c.subject), c.ts ?? null);
+  return shrunk;
 }
 
 // ---------------------------------------------------------------- git history
@@ -650,11 +703,22 @@ const RECORD = '\x1e';
  */
 async function syncGit(db, root) {
   const { execFileSync } = await import('node:child_process');
+  const git = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+  const project = comparable(root);
+  // Only what came since the last sync: the HEAD it saw is kept, and while it is still in the history
+  // of today's HEAD, «last..HEAD» holds every commit the journal lacks. A big repository no longer
+  // pays a full log on each refresh; a rewritten history or a new branch reads it all, as before.
+  const headKey = `githead:${project}`;
+  let head = null;
+  try { head = git(['rev-parse', '--verify', '--quiet', 'HEAD']).trim(); } catch {}
+  const last = db.prepare('SELECT value FROM meta WHERE key = ?').get(headKey)?.value ?? null;
+  if (head && last === head) return 0;
+  let range = [];
+  if (head && last) { try { git(['merge-base', '--is-ancestor', last, head]); range = [`${last}..${head}`]; } catch {} }
   let out;
   try {
-    out = execFileSync('git', ['-C', root, 'log', '--no-merges', `--format=${RECORD}%H${FIELD}%cI${FIELD}%s${FIELD}%b${FIELD}`, '--name-only'], { encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+    out = git(['log', '--no-merges', `--format=${RECORD}%H${FIELD}%cI${FIELD}%s${FIELD}%b${FIELD}`, '--name-only', ...range]);
   } catch { return 0; }
-  const project = comparable(root);
   const known = new Set(db.prepare('SELECT hash FROM git_commits WHERE project = ?').all(project).map((r) => r.hash));
   const insert = db.prepare('INSERT OR REPLACE INTO git_commits VALUES (?, ?, ?, ?, ?, ?, ?)');
   const insertText = db.prepare('INSERT INTO gitmsg(text, project, hash, ts) VALUES (?, ?, ?, ?)');
@@ -672,6 +736,7 @@ async function syncGit(db, root) {
       insertText.run(`${redact(subject)}\n${cleanBody}\n${files.slice(0, 40).join(' ')}`, project, hash.trim(), utc);
       added++;
     }
+    if (head) db.prepare('INSERT OR REPLACE INTO meta VALUES (?, ?)').run(headKey, head);
     db.exec('COMMIT');
   } catch (e) { db.exec('ROLLBACK'); throw e; }
   return added;
@@ -692,7 +757,7 @@ async function sync(db, extraRoots = []) {
   const started = Date.now();
   const roots = [...new Map([...connectedRoots(), ...extraRoots.map((r) => path.resolve(fromMsys(r)))].map((r) => [comparable(r), r])).values()];
   const rootSet = new Set(roots.map(comparable));
-  const stats = { chats: 0, parsed: 0, unchanged: 0, stored: 0, notOurs: 0, forks: 0, empty: 0, unreadable: 0, failed: 0, gitCommitsAdded: 0 };
+  const stats = { chats: 0, parsed: 0, unchanged: 0, stored: 0, notOurs: 0, forks: 0, empty: 0, unreadable: 0, failed: 0, shrunk: 0, gitCommitsAdded: 0 };
   setSecretWords(roots.flatMap((r) => { const p = projectProfile(r); return Array.isArray(p.secretWords) ? p.secretWords : []; }));
   // Git first: a commit hash seen in a chat attributes the chat to the project that holds it.
   for (const root of roots) stats.gitCommitsAdded += await syncGit(db, root);
@@ -711,28 +776,38 @@ async function sync(db, extraRoots = []) {
     if (!changed) { stats.unchanged++; continue; }
     stats.parsed++;
     let s;
-    try { s = parseChat(chat); } catch { stats.failed++; continue; }
+    try { s = parseChat(chat); } catch (e) { stats.failed++; stats.firstError ??= `${path.basename(chat.files[0] ?? '')}: ${String(e?.message ?? e).split('\n')[0]}`; continue; }
     // An unreadable file is unknown, not empty: keep what the journal has and retry next time.
     if (s.readFailed) { stats.unreadable++; continue; }
     const places = placesOf(s);
     const fresh = s.fork ? [] : attribute(places, roots, hashIndex);
     // Links to disconnected projects are not re-judged: `disconnect` promises to keep what was collected.
     const kept = s.id ? linksOf.all(s.id).filter((p) => !rootSet.has(p.project) && !fresh.some((f) => f.project === p.project)) : [];
-    const projects = [...fresh, ...kept];
+    let projects = [...fresh, ...kept];
+    // A parse with no turns has nothing to attribute by either: the chat keeps the projects it had.
+    if (!projects.length && s.id && !s.fork && !s.messages.length) projects = linksOf.all(s.id);
     const vanished = s.id ? sourcesOf.all(s.id).some((r) => !chat.files.includes(r.file) && !statOrNull(r.file)) : false;
+    const held = s.id && !s.fork && projects.length && !s.messages.length && !vanished ? storedMessages(db, s.id).length : 0;
     db.exec('BEGIN IMMEDIATE');
     try {
       if (s.fork) stats.forks++;
       else if (!projects.length) stats.notOurs++;
-      else if (!s.messages.length && !vanished) stats.empty++;
-      if (!s.fork && projects.length && (s.messages.length || vanished)) { store(db, s, projects, roots, vanished); stats.stored++; }
+      else if (!s.messages.length && !vanished && !held) stats.empty++;
+      if (!s.fork && projects.length && (s.messages.length || vanished || held)) {
+        if (store(db, s, projects, roots, vanished)) { stats.shrunk++; stats.firstShrunk ??= s.id; }
+        stats.stored++;
+      }
       else if (s.id && exists.get(s.id) && !vanished) removeSession(db, s.id);
       // Places are kept even for chats of other projects, so connecting a project later finds them.
       markSources(db, chat.files, s.id, places);
       db.exec('COMMIT');
-    } catch (e) { db.exec('ROLLBACK'); stats.failed++; }
+    } catch (e) { db.exec('ROLLBACK'); stats.failed++; stats.firstError ??= `${s.id ?? '?'}: ${String(e?.message ?? e).split('\n')[0]}`; }
   }
   const setMeta = db.prepare('INSERT OR REPLACE INTO meta VALUES (?, ?)');
+  if (db.prepare("SELECT value FROM meta WHERE key = 'reredact'").get()?.value === '1') {
+    stats.reredacted = reredactArchive(db);
+    setMeta.run('reredact', '0');
+  }
   if (db.prepare("SELECT value FROM meta WHERE key = 'vacuum'").get()?.value === '1') {
     // Old pages of the file and of its write-ahead log may still hold text redacted only now.
     db.exec('VACUUM; PRAGMA wal_checkpoint(TRUNCATE);');
@@ -740,6 +815,8 @@ async function sync(db, extraRoots = []) {
   }
   setMeta.run('synced', new Date().toISOString());
   stats.seconds = (Date.now() - started) / 1000;
+  // What journal_status reports about the last sync: a background refresh has no one to tell.
+  setMeta.run('last_sync', JSON.stringify({ at: new Date().toISOString(), failed: stats.failed, unreadable: stats.unreadable, firstError: stats.firstError ?? null, shrunk: stats.shrunk, firstShrunk: stats.firstShrunk ?? null }));
   return stats;
 }
 
@@ -772,7 +849,20 @@ function projectStats(db, root) {
     gitCommits: one('SELECT count(*) n FROM git_commits WHERE project = ?'),
     firstChat: db.prepare(`SELECT min(started) v FROM sessions WHERE id IN (${inProject})`).get(project).v,
     synced: db.prepare("SELECT value FROM meta WHERE key = 'synced'").get()?.value ?? null,
+    lastSync: lastSyncReport(db),
   };
+}
+
+/** The last sync's trouble, if any: chats that failed to parse, and a background refresh that failed after it. */
+function lastSyncReport(db) {
+  let report = null;
+  try { report = JSON.parse(db.prepare("SELECT value FROM meta WHERE key = 'last_sync'").get()?.value ?? 'null'); } catch {}
+  try {
+    const last = fs.readFileSync(path.join(dataRoot(), 'sync.log'), 'utf8').trim().split('\n').pop();
+    const at = last?.slice(0, 24);
+    if (last && (!report?.at || at > report.at)) report = { ...(report ?? {}), refreshFailed: { at, error: last.slice(25) } };
+  } catch {}
+  return report;
 }
 
 // ---------------------------------------------------------------- queries
@@ -1381,11 +1471,13 @@ async function briefFor(cwd, sessionId = null) {
   if (!root) return null;
   const db = openDb({ readOnly: true });
   if (!db) return null;
-  const profile = projectProfile(root);
-  let tasks = null;
-  try { tasks = await readTasks(root, profile); } catch {}
-  const context = startContext(db, root, sessionId, tasks, profile);
-  return context ? { root, text: short(context, BRIEF_CHARS) } : null;
+  try {
+    const profile = projectProfile(root);
+    let tasks = null;
+    try { tasks = await readTasks(root, profile); } catch {}
+    const context = startContext(db, root, sessionId, tasks, profile);
+    return context ? { root, text: short(context, BRIEF_CHARS) } : null;
+  } finally { db.close(); }
 }
 
 async function hookStart() {
@@ -1412,12 +1504,12 @@ const MCP_TOOLS = [
   {
     name: 'journal_recent',
     description: 'List the most recent chats of this project with their titles, number of files changed and commits.',
-    inputSchema: { type: 'object', properties: { project: { type: 'string' }, cwd: { type: 'string', description: 'your working folder (any folder inside a connected project); needed where the server does not run in the project' }, limit: { type: 'integer', minimum: 1, maximum: 30 } }, additionalProperties: false },
+    inputSchema: { type: 'object', properties: { project: { type: 'string', description: 'connected project folder; defaults to the folder this server runs in' }, cwd: { type: 'string', description: 'your working folder (any folder inside a connected project); needed where the server does not run in the project' }, limit: { type: 'integer', minimum: 1, maximum: 30 } }, additionalProperties: false },
   },
   {
     name: 'journal_session',
     description: 'Read the dialog of one past chat of this project (the user\'s words and the agent\'s answers, without tool output), plus the files it changed and its commits. Pass at least 8 characters of the chat id. Long chats are paged with offset.',
-    inputSchema: { type: 'object', properties: { id: { type: 'string', minLength: 8, description: 'chat id or its beginning (8+ characters)' }, project: { type: 'string' }, cwd: { type: 'string', description: 'your working folder (any folder inside a connected project); needed where the server does not run in the project' }, offset: { type: 'integer', minimum: 0 }, limit: { type: 'integer', minimum: 1, maximum: 200 } }, required: ['id'], additionalProperties: false },
+    inputSchema: { type: 'object', properties: { id: { type: 'string', minLength: 8, description: 'chat id or its beginning (8+ characters)' }, project: { type: 'string', description: 'connected project folder; defaults to the folder this server runs in' }, cwd: { type: 'string', description: 'your working folder (any folder inside a connected project); needed where the server does not run in the project' }, offset: { type: 'integer', minimum: 0 }, limit: { type: 'integer', minimum: 1, maximum: 200 } }, required: ['id'], additionalProperties: false },
   },
   {
     name: 'journal_brief',
@@ -1442,9 +1534,21 @@ const MCP_TOOLS = [
   {
     name: 'journal_tasks',
     description: 'The open tasks of this project, if it keeps them as files — one Markdown file per task (folder tasks/ by default; a project profile may rename the folder, fields and values) — read from the default branch and from every local branch, so a task another chat has taken (in_progress in its branch) shows as taken, and one closed in a branch shows as waiting for its merge. Without arguments: open tasks, taken ones first, then by priority (high, medium, low), group order and status (now, waiting, next, later). key returns one task in full. query filters by plain words (all must occur; write in the language of the tasks). status: open (default), all, in_progress, now, waiting, next, later, done. owner: agent, human, external. The answer says how to take and close a task, in the words the task files of the project use.',
-    inputSchema: { type: 'object', properties: { project: { type: 'string' }, cwd: { type: 'string', description: 'your working folder (any folder inside a connected project); needed where the server does not run in the project' }, key: { type: 'string' }, query: { type: 'string' }, status: { type: 'string' }, owner: { type: 'string' }, limit: { type: 'integer', minimum: 1, maximum: 300 } }, additionalProperties: false },
+    inputSchema: { type: 'object', properties: { project: { type: 'string', description: 'connected project folder; defaults to the folder this server runs in' }, cwd: { type: 'string', description: 'your working folder (any folder inside a connected project); needed where the server does not run in the project' }, key: { type: 'string' }, query: { type: 'string' }, status: { type: 'string' }, owner: { type: 'string' }, limit: { type: 'integer', minimum: 1, maximum: 300 } }, additionalProperties: false },
   },
 ];
+
+// MCP tool annotations: a title for hosts that show one, and which tools only read. journal_connect
+// writes the list of connected folders, journal_open writes the page and starts the browser.
+const TOOL_TITLES = {
+  journal_search: 'Search the project journal', journal_recent: 'Recent chats', journal_session: 'Read a past chat',
+  journal_brief: 'Project brief', journal_status: 'Journal status', journal_connect: 'Connect a project folder',
+  journal_open: 'Open the journal page', journal_tasks: 'Project tasks',
+};
+for (const t of MCP_TOOLS) {
+  const readOnly = t.name !== 'journal_connect' && t.name !== 'journal_open';
+  t.annotations = { title: TOOL_TITLES[t.name], readOnlyHint: readOnly, ...(readOnly ? {} : { destructiveHint: false }), openWorldHint: false };
+}
 
 const STALE_MS = 10 * 60 * 1000;
 
@@ -1485,9 +1589,14 @@ function connectable(folder) {
   return root;
 }
 
+// The MCP server lives as long as its chat: one read-only connection serves all its calls instead of
+// a new one, never closed, per call. In WAL mode each read still sees the latest committed sync.
+let readerDb = null;
+const reader = () => (readerDb ??= openDb({ readOnly: true }));
+
 /** A tool call never waits for a sync: it answers from the journal and refreshes it in the background. */
 async function currentDb() {
-  const db = openDb({ readOnly: true });
+  const db = reader();
   if (!db) throw new Error('The journal has not been built yet. ' + NOT_CONNECTED);
   const at = syncedAt(db);
   if (!at || Date.now() - Date.parse(at) > STALE_MS) await refreshInBackground();
@@ -1549,7 +1658,7 @@ async function mcpCall(name, args, fallback) {
     // One task in full also names the chats that worked on it: those that edited its file and those
     // started from its «copy task» text (their title carries the key).
     if (args.key && answer.file) {
-      const db = openDb({ readOnly: true });
+      const db = reader();
       if (db) answer.chats = db.prepare(`SELECT s.id, s.title, s.ended FROM sessions s JOIN session_projects p ON p.session_id = s.id AND p.project = ?
         WHERE s.title LIKE ? ESCAPE '\\' OR s.id IN (SELECT session_id FROM files WHERE path = ?) ORDER BY s.ended DESC LIMIT 10`).all(comparable(root), `%[${String(args.key).replace(/[\\%_]/g, '\\$&')}]%`, answer.file);
     }
@@ -1583,7 +1692,7 @@ async function serveMcp(explicitRoot) {
         reply({ result: { protocolVersion: MCP_VERSIONS.includes(asked) ? asked : MCP_VERSIONS[0], capabilities: { tools: {} }, serverInfo: { name: 'agent-logbook', version: `${SCHEMA_VERSION}.${PARSER_VERSION}` }, instructions: MCP_INSTRUCTIONS } });
         // The server starts with every chat, so this is where the journal catches up; the start hook
         // stays read-only.
-        try { const db = openDb({ readOnly: true }); const at = db && syncedAt(db); if (connectedRoots().length && (!at || Date.now() - Date.parse(at) > STALE_MS)) await refreshInBackground(); } catch {}
+        try { const db = reader(); const at = db && syncedAt(db); if (connectedRoots().length && (!at || Date.now() - Date.parse(at) > STALE_MS)) await refreshInBackground(); } catch {}
       } else if (message.method === 'ping') reply({ result: {} });
       else if (message.method === 'tools/list') reply({ result: { tools: MCP_TOOLS } });
       else if (message.method === 'tools/call') {
@@ -2001,7 +2110,10 @@ async function readTasks(root, profile = projectProfile(root)) {
   const tasks = names.map((p) => parseTask(path.posix.basename(p, '.md'), blobs.get(`${ref}:${p}`), prof)).filter(Boolean);
 
   const branches = [];
-  const refs = text(['for-each-ref', '--format=%(refname:short)', 'refs/heads/']).split('\n').filter((b) => b && b !== ref);
+  // Only branches not yet merged into ref: a merged branch's tip is an ancestor of ref, so its
+  // «ref...branch» diff is empty anyway. A repository with a hundred old branches paid a diff for each
+  // of them on every chat start (6.4 s of the hook's 15 s in one with 121 branches, 10 unmerged).
+  const refs = text(['for-each-ref', `--no-merged=${ref}`, '--format=%(refname:short)', 'refs/heads/']).split('\n').filter((b) => b && b !== ref);
   for (const branch of refs) {
     let changed;
     try { changed = text(['diff', '--name-only', '--diff-filter=AM', `${ref}...${branch}`, '--', prof.dir + '/']).split('\n').filter(isTaskFile); } catch { continue; }
@@ -2239,10 +2351,14 @@ async function view(root, { open = false, serve = false, port = 47770 } = {}) {
     const http = await import('node:http');
     // Every reload reads the journal again: the page is as fresh as the last background sync.
     const server = http.createServer(async (req, res) => {
+      // Only this machine's own address: a web page that rebinds its domain to 127.0.0.1 would
+      // otherwise read the excerpts through the visitor's browser.
+      if (!new Set([`127.0.0.1:${port}`, `localhost:${port}`]).has(String(req.headers.host ?? '').toLowerCase())) { res.writeHead(403).end(); return; }
       if (req.url !== '/' && !req.url.startsWith('/?')) { res.writeHead(404).end(); return; }
       try {
         const db = openDb({ readOnly: true });
-        const html = renderView(await viewData(db, root));
+        let html;
+        try { html = renderView(await viewData(db, root)); } finally { db?.close(); }
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(html);
       } catch (e) { res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' }).end(String(e?.message ?? e)); }
     });
@@ -2254,7 +2370,7 @@ async function view(root, { open = false, serve = false, port = 47770 } = {}) {
   if (!db) throw new Error('The journal has not been built yet. ' + NOT_CONNECTED);
   const out = path.join(dataRoot(), 'view', `${path.basename(root).replace(/[^\w.-]+/g, '-')}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, renderView(await viewData(db, root)));
+  try { fs.writeFileSync(out, renderView(await viewData(db, root))); } finally { db.close(); }
   if (open) {
     const { spawn } = await import('node:child_process');
     // No shell in between: the path goes to the opener as one argument, whatever it contains.
@@ -2290,7 +2406,11 @@ async function main(argv) {
   const kv = (v) => console.log(Object.entries(v).map(([k, x]) => `${k}: ${typeof x === 'object' ? JSON.stringify(x) : x}`).join('\n'));
   if (command === 'hook-start') return hookStart();
   if (command === 'mcp') return serveMcp(target);
-  if (command === 'refresh') { try { await withLock(0, () => sync(openDb())); } catch {} return; }
+  if (command === 'refresh') {
+    // A background refresh has no terminal: a failure goes to sync.log, which journal_status reads.
+    try { await withLock(0, () => sync(openDb())); } catch (e) { try { fs.appendFileSync(path.join(dataRoot(), 'sync.log'), `${new Date().toISOString()} ${String(e?.message ?? e).split('\n')[0]}\n`); } catch {} }
+    return;
+  }
   if (command === 'connected') return console.log(connectedRoots().join('\n') || T.noneConnected);
   if (command === 'sync') return out(await withLock(120000, () => sync(openDb())), kv);
   if (command === 'status') {

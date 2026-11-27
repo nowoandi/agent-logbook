@@ -1,53 +1,61 @@
-# Agent Logbook — журнал проекта для ИИ-агентов
+# Agent Logbook — a project journal for AI agents
 
-Плагин для Claude Code (и Codex). Журнал хранит прошлые чаты Claude Code, Cowork (на своём
-компьютере) и Codex, привязанные к папке проекта, и git log этой папки. По ним он ищет, а в начале
-нового чата даёт короткую сводку: где остановились, что решили, какие задачи открыты. Агенту не
-нужно заново выяснять то, что уже обсуждалось, а человеку — пересказывать прошлые чаты.
+A plugin for Claude Code (and Codex). The journal keeps the past chats of Claude Code, Cowork (on
+your own computer) and Codex that belong to a project folder, together with the folder's git log.
+It searches them, and at the start of a new chat it gives a short brief: where the work stopped,
+what was decided, which tasks are open. The agent does not have to rediscover what was already
+discussed, and you do not have to retell past chats.
 
-## Что умеет
+Everything runs on your computer. The journal only reads chat transcripts and git history; nothing
+is sent anywhere. A Russian version of this text is in `README.ru.md` in the plugin folder.
 
-- **Сводка в начале чата.** В Claude Code её приносит хук SessionStart. Там, где хуки не
-  срабатывают, агент берёт ту же сводку сам через `journal_brief` — об этом ему говорят навык плагина
-  и сам MCP-сервер.
-- **MCP-сервер `journal`, восемь инструментов:**
-  - `journal_brief` — что знать в начале чата: последние чаты и их коммиты, документы о текущем
-    состоянии проекта с их возрастом, языки проекта, открытые задачи;
-  - `journal_search` — поиск по чатам и коммитам: цитаты с репликами вокруг, изменённые файлы, коммиты;
-  - `journal_recent` — последние чаты проекта;
-  - `journal_session` — диалог одного чата целиком, длинный — постранично;
-  - `journal_tasks` — задачи проекта из файлов, с отметкой, какие уже взяты другими чатами и с
-    какого времени; с `key` — одна задача целиком и чаты, которые над ней работали;
-  - `journal_status` — какие папки подключены, сколько в них чатов и коммитов, когда журнал обновлялся;
-  - `journal_connect` — подключить папку проекта (только по просьбе человека);
-  - `journal_open` — построить и открыть локальную страницу журнала.
-- **Поиск без словарей.** Чаты и коммиты ищутся раздельно: сначала все слова вместе, затем основы
-  слов, затем любое слово. Основа — длинное слово без последних букв, без привязки к языку:
-  «увеличить» находит «увеличение». Найденный коммит называет чат, который его сделал. Такой чат
-  поднимается выше, а если своими словами не нашёлся — занимает свободное место в выдаче, с репликой
-  человека перед коммитом. Так запрос словами коммита находит разговор, даже если тот шёл на другом
-  языке. Ответ компактный: у чата до 8 файлов и коммиты рядом по времени с найденными репликами,
-  плюс сколько их всего; полный список — `journal_session`.
-- **Задачи из файлов проекта.** Одна задача — один файл `tasks/<ключ>.md` с полями `status`, `owner`,
-  `priority`, `group`, `area`, `session`, `created`, `source`, `closed`. Журнал читает их из основной
-  ветки и из всех локальных веток: задача, взятая в чужой ветке, видна как занятая. Задачи читаются
-  из git, а не из рабочей папки: незакоммиченная правка не видна.
-  - У задачи видно, когда её файл последний раз менялся в основной ветке (`touched`) и с какого
-    времени она отмечена взятой (`taken.since`). Отметка старше 12 часов без новых коммитов скорее
-    брошена: ответ `journal_tasks` и текст «Скопировать задачу» советуют проверить git и брать
-    задачу, а не ждать тот чат.
-  - Общие имена полей и значений на английском, немецком, русском, испанском, французском и
-    итальянском (`wer`, `prio`, `приоритет`, `erledigt` …) понимаются без профиля. Свои названия
-    папки, полей и значений журнал находит при подключении сам или берёт из профиля проекта (см.
-    ниже).
-- **Страница журнала.** Один локальный HTML-файл без интернета: центр управления (где остановились,
-  активность, задачи), карта чатов и областей кода, лента по дням. Страница и командная строка — на
-  английском или русском (см. «Языки»).
-- **Навык `agent-logbook`** — когда и как агенту спрашивать журнал.
-- **Команды Claude Code:** `/agent-logbook:connect`, `/agent-logbook:view`,
+## What it does
+
+- **A brief at the start of a chat.** In Claude Code the SessionStart hook brings it. Where hooks do
+  not fire, the agent fetches the same brief itself with `journal_brief`; the plugin's skill and the
+  MCP server tell it to.
+- **The `journal` MCP server, eight tools:**
+  - `journal_brief` — what to know at the start of a chat: the latest chats and their commits, the
+    documents that describe the project's current state and how old they are, the project's
+    languages, open tasks;
+  - `journal_search` — search across chats and commits: quotes with the turns around them, changed
+    files, commits;
+  - `journal_recent` — the project's latest chats;
+  - `journal_session` — one whole chat, page by page when it is long;
+  - `journal_tasks` — the project's tasks from its files, marked when another chat has taken one and
+    since when; with `key`, one task in full and the chats that worked on it;
+  - `journal_status` — which folders are connected, how many chats and commits they hold, when the
+    journal was last updated;
+  - `journal_connect` — connect a project folder (only when the person asks);
+  - `journal_open` — build and open the local journal page.
+- **Search without dictionaries.** Chats and commits are searched separately: first all words
+  together, then word stems, then any word. A stem is a long word without its last letters, for any
+  language: "connection" finds "connecting". A commit that matches names the chat that made it. That
+  chat ranks higher, and if its own words did not match, it still takes a free slot in the results
+  with the person's message before the commit. So a query in the commit's words finds the
+  conversation even when it was held in another language. Results stay compact: up to 8 files per
+  chat and the commits close in time to the matching turns, plus how many there are in total; the
+  full list is in `journal_session`.
+- **Tasks from project files.** One task is one file `tasks/<key>.md` with the fields `status`,
+  `owner`, `priority`, `group`, `area`, `session`, `created`, `source`, `closed`. The journal reads
+  them from the main branch and from every local branch, so a task taken in another branch shows as
+  taken. Tasks are read from git, not from the working folder: an uncommitted edit is not visible.
+  - Each task shows when its file last changed in the main branch (`touched`) and since when it has
+    been marked as taken (`taken.since`). A mark older than 12 hours without new commits is probably
+    abandoned: the `journal_tasks` answer and the "Copy task" text suggest checking git and taking
+    the task instead of waiting for that chat.
+  - Common field and value names in English, German, Russian, Spanish, French and Italian (`wer`,
+    `prio`, `приоритет`, `erledigt` …) are understood without a profile. The journal finds a
+    project's own folder, field and value names itself when you connect it, or takes them from the
+    project profile (see below).
+- **The journal page.** One local HTML file that works offline: a control centre (where the work
+  stopped, activity, tasks), a map of chats and code areas, and a day-by-day timeline. The page and
+  the command line are in English or Russian (see "Languages").
+- **The `agent-logbook` skill** — when and how the agent should ask the journal.
+- **Claude Code commands:** `/agent-logbook:connect`, `/agent-logbook:view`,
   `/agent-logbook:status`.
 
-Пример файла задачи:
+An example task file:
 
 ```markdown
 ---
@@ -56,158 +64,173 @@ owner: agent
 priority: high
 group: core
 ---
-# Импорт: пустой файл не должен ронять загрузку
+# Import: an empty file must not break the upload
 
-Что сделать и почему.
-Check: что ещё не проверено.
+What to do and why.
+Check: what is not verified yet.
 ```
 
-Значения по умолчанию: `status` — `now`, `next`, `later`, `waiting`, `in_progress`, `done`;
-`owner` — `agent`, `human`, `external`; `priority` — `high`, `medium`, `low`.
+Default values: `status` — `now`, `next`, `later`, `waiting`, `in_progress`, `done`; `owner` —
+`agent`, `human`, `external`; `priority` — `high`, `medium`, `low`.
 
-## Чем отличается
+## Example prompts
 
-От похожих инструментов журнал отличается тем, что именно он запоминает и откуда берёт.
+Once a folder is connected, ask in plain words; the agent picks the tool:
 
-- **Карта работы, а не карта кода.** Индексы и графы кода показывают, какие функции есть и кто
-  кого вызывает. Код агент и так читает сам. Журнал показывает то, чего в коде нет: что обсуждали,
-  что решили и почему, что пробовали и бросили, какие чаты и коммиты касались этой части проекта.
-- **Никто не обязан вести заметки.** Плагины памяти обычно полагаются на то, что агент сам запишет
-  важное, или просят модель пересказать сессию. Забыл агент записать — памяти нет. Журнал строится
-  из того, что и так остаётся на диске: транскриптов чатов и истории git.
-- **Несколько агентов — одна история.** Чаты Claude Code, Cowork и Codex по одной папке попадают в
-  общий журнал, и каждый из них видит работу остальных.
-- **Чат привязан к проекту по делу.** Чат относится к проекту, если он там запущен, менял там файлы
-  или сделал там коммит. Простого упоминания проекта для этого мало.
+- "Where did we stop last time?" — the brief and `journal_recent`.
+- "Did we already try caching the import? What came of it?" — `journal_search`, then
+  `journal_session` for the whole discussion.
+- "Why was the upload limit set to 20 MB?" — the chat that decided it and its commit.
+- "Which task can I take next?" — `journal_tasks`, with the tasks other chats have taken marked.
+- "Show me the journal page." — `journal_open`.
 
-Ещё:
+## How it differs
 
-- **Архив, а не ссылка.** Журнал хранит диалоги в своей базе, поэтому история переживает удаление
-  исходных транскриптов.
-- **Источники только читаются.** Транскрипты агентов и репозитории журнал не меняет.
-- **Всё локально.** Ничего никуда не отправляется, сервер работает на вашем компьютере.
-- **Без зависимостей.** Нужен только Node.js: база — встроенный в Node SQLite с полнотекстовым
-  поиском, ничего не скачивается и не ставится через npm.
-- **Один журнал на все агенты.** Сервер журнала в Claude Code, Cowork и Codex работает с одной и
-  той же папкой данных.
-- **Пароли и ключи в выдержках скрываются** (пароли, токены, ключи API, закрытые ключи). Слова
-  «пароль» и «ключ» узнаются на частых языках, свои слова добавляются в профиле (`secretWords`). Это
-  защита от случайной утечки, а не гарантия.
+The journal differs from similar tools in what it remembers and where it takes it from.
 
-## Требования
+- **A map of the work, not of the code.** Code indexes and graphs show which functions exist and who
+  calls whom; the agent reads code by itself anyway. The journal shows what the code does not: what
+  was discussed, what was decided and why, what was tried and dropped, which chats and commits
+  touched this part of the project.
+- **Nobody has to keep notes.** Memory plugins usually rely on the agent writing down what matters,
+  or ask a model to summarise the session. If the agent forgot to write it down, there is no memory.
+  The journal is built from what stays on disk anyway: chat transcripts and git history.
+- **Several agents, one history.** Chats of Claude Code, Cowork and Codex in one folder go into a
+  shared journal, and each of them sees the work of the others.
+- **A chat belongs to a project for a reason.** A chat counts for a project if it was started there,
+  changed files there or made a commit there. Merely mentioning the project is not enough.
 
-- **Node.js 22.13 или новее** в `PATH` (нужен встроенный `node:sqlite`). Рекомендуется ветка 24.
-  Проверить: `node --version`.
-- **git** в `PATH` — для истории коммитов. Без него журнал строится только из чатов.
-- **Claude Code 2.1.139 или новее** — с этой версии хук запускается без оболочки (форма
-  `command` + `args`).
-- Проверено на Claude Code 2.1.257 и Node.js 24.14 под Windows: `claude plugin validate --strict`
-  проходит, MCP-сервер из плагина подключается (`claude mcp get` → Connected). Установка в Codex
-  0.131 под Windows: `codex plugin add` ставит плагин, `codex mcp list` показывает сервер `journal`.
+Also:
 
-## Установка
+- **An archive, not a link.** The journal stores the conversations in its own database, so the
+  history survives deletion of the original transcripts.
+- **Sources are only read.** The journal does not change agent transcripts or repositories.
+- **Everything is local.** Nothing is sent anywhere; the server runs on your computer.
+- **No dependencies.** Only Node.js is needed: the database is the SQLite with full-text search that
+  is built into Node; nothing is downloaded or installed through npm.
+- **One journal for all agents.** The journal server in Claude Code, Cowork and Codex works with the
+  same data folder.
+- **Passwords and keys are masked in quotes** (passwords, tokens, API keys, private keys). The words
+  "password" and "key" are recognised in common languages; add your own in the profile
+  (`secretWords`). This protects against an accidental leak; it is not a guarantee.
 
-Репозиторий плагина — маркетплейс для Claude Code и Codex: в корне лежат
-`.claude-plugin/marketplace.json` (Claude Code) и `.agents/plugins/marketplace.json` (Codex), сам
-плагин — в папке `plugins/agent-logbook`. Папка плагина (она же zip) — тоже маркетплейс из одного
-плагина, но только для Claude Code.
+## Requirements
 
-### Claude Code — основной путь
+- **Node.js 22.13 or newer** in `PATH` (the built-in `node:sqlite` is needed). Version 24 is
+  recommended. Check with `node --version`.
+- **git** in `PATH` — for the commit history. Without it the journal is built from chats only.
+- **Claude Code 2.1.139 or newer** — from this version the hook runs without a shell (the `command` +
+  `args` form).
+- Tested with Claude Code 2.1.257 and Node.js 24.14 on Windows: `claude plugin validate --strict`
+  passes, and the MCP server from the plugin connects (`claude mcp get` → Connected). Installation
+  in Codex 0.131 on Windows: `codex plugin add` installs the plugin, and `codex mcp list` shows the
+  `journal` server.
 
-Из git-репозитория:
+## Installation
+
+The plugin's repository is a marketplace for Claude Code and Codex: its root holds
+`.claude-plugin/marketplace.json` (Claude Code) and `.agents/plugins/marketplace.json` (Codex), and
+the plugin itself is in `plugins/agent-logbook`. The plugin folder (and the zip) is also a
+one-plugin marketplace, for Claude Code only.
+
+### Claude Code — the main way
+
+From the git repository:
 
 ```bash
-claude plugin marketplace add <владелец>/agent-logbook
+claude plugin marketplace add <owner>/agent-logbook
 claude plugin install agent-logbook@agent-logbook
 ```
 
-Claude Code сам держит копию репозитория в `~/.claude/plugins/marketplaces/agent-logbook/` и копию
-плагина в своём кэше — свою папку хранить не нужно. Для закрытого репозитория git на этом компьютере
-должен входить в него без вопросов (ssh-ключ или сохранённый пароль).
+Claude Code keeps its own copy of the repository in `~/.claude/plugins/marketplaces/agent-logbook/`
+and a copy of the plugin in its cache, so you do not need to keep a folder of your own.
 
-Из папки на диске — сначала распакуйте zip туда, где папка останется навсегда, например
-`C:\Tools\claude-plugins\agent-logbook` (внутри неё должна лежать папка `.claude-plugin`):
+From a folder on disk, first unpack the zip where the folder will stay for good, for example
+`C:\Tools\claude-plugins\agent-logbook` (the `.claude-plugin` folder must be inside it):
 
 ```bash
 claude plugin marketplace add "C:\Tools\claude-plugins\agent-logbook"
 claude plugin install agent-logbook@agent-logbook
 ```
 
-- В `marketplace add` — полный путь к распакованной папке, а не к zip-файлу, и без `\` в конце
-  (в PowerShell `"…\"` ломает путь). Ошибка «Invalid marketplace source format» значит, что вместо
-  пути осталась заглушка вроде `<имя>` или стоит голое имя папки: относительный путь пишется как
-  `./agent-logbook`.
-- Плагин, добавленный из папки, работает прямо из неё: не переносите и не удаляйте её — иначе
-  Claude Code напишет «failed to load: cache-miss». Поэтому не «Загрузки» и не «Временные».
+- `marketplace add` takes the full path to the unpacked folder, not to the zip file, and without a
+  trailing `\` (in PowerShell `"…\"` breaks the path). The error "Invalid marketplace source format"
+  means a placeholder such as `<name>` is still there, or a bare folder name is used: write a
+  relative path as `./agent-logbook`.
+- A plugin added from a folder runs right from that folder: do not move or delete it, or Claude Code
+  reports "failed to load: cache-miss". So not Downloads and not a temp folder.
 
-Затем новый чат или `/reload-plugins` в открытом.
+Then start a new chat, or run `/reload-plugins` in an open one.
 
-На одну сессию, без установки:
+For one session, without installing:
 
 ```bash
-claude --plugin-dir "<папка плагина>"
+claude --plugin-dir "<plugin folder>"
 ```
 
 ### Claude Desktop
 
-- **Вкладка Code** использует плагины Claude Code: установленный выше плагин должен появиться и
-  там. [не проверено]
-- **Загрузка файлом:** Customize › Plugins › Upload plugin, файл `agent-logbook-<версия>.zip`.
-  Приложение принимает только `.zip`
-  ([#40414](https://github.com/anthropics/claude-code/issues/40414)).
-  - Загруженный плагин сам не обновляется
-    ([#93553](https://github.com/anthropics/claude-code/issues/93553)): новую версию загружать заново.
-  - Не ставить одновременно с установкой из маркетплейса: сводка и сервер журнала задвоятся.
+- **The Code tab** uses Claude Code plugins: the plugin installed above should appear there too.
+  [not verified]
+- **Upload as a file:** Customize › Plugins › Upload plugin, file `agent-logbook-<version>.zip`. The
+  app accepts only `.zip` ([#40414](https://github.com/anthropics/claude-code/issues/40414)).
+  - An uploaded plugin does not update itself
+    ([#93553](https://github.com/anthropics/claude-code/issues/93553)): upload each new version again.
+  - Do not use it together with the marketplace installation: the brief and the journal server
+    would run twice.
 
 ### Codex
 
-Codex ставит из маркетплейса репозитория навык и MCP-сервер, без хука:
+Codex installs the skill and the MCP server from the repository's marketplace, without the hook:
 
 ```bash
-codex plugin marketplace add <владелец>/agent-logbook
+codex plugin marketplace add <owner>/agent-logbook
 codex plugin add agent-logbook@agent-logbook
 ```
 
-Установка проверена (Codex 0.131, Windows): `codex plugin add` ставит плагин, `codex mcp list`
-показывает сервер `journal`. Работа в живой сессии Codex не проверена — для неё нужен вход в
-аккаунт. Папку плагина (zip) Codex как маркетплейс не принимает: ему нужен репозиторий или его
-локальная копия, где плагин лежит в `plugins/agent-logbook`.
+Installation is verified (Codex 0.131, Windows): `codex plugin add` installs the plugin, and
+`codex mcp list` shows the `journal` server. Work in a live Codex session is not verified, because
+it needs an account sign-in. Codex does not accept the plugin folder (zip) as a marketplace: it
+needs the repository or a local copy of it, with the plugin in `plugins/agent-logbook`.
 
-Без маркетплейса можно подключить только MCP-сервер:
+Without a marketplace you can connect only the MCP server:
 
 ```bash
-codex mcp add journal -- node "<папка плагина>/server/journal.mjs" mcp
+codex mcp add journal -- node "<plugin folder>/server/journal.mjs" mcp
 ```
 
-Если в Codex журнал пуст, а в Claude Code полон, Codex не передал серверу переменные окружения с
-папкой данных. Тогда указать её явно: добавить `--env AGENT_LOGBOOK_HOME=<папка данных>` (см.
-«Где данные»). Хука в Codex нет: сводку агент берёт сам через `journal_brief`.
+If the journal is empty in Codex but full in Claude Code, Codex did not pass the server the
+environment variables with the data folder. Then set it explicitly: add
+`--env AGENT_LOGBOOK_HOME=<data folder>` (see "Data and what the journal reads"). Codex has no hook:
+the agent fetches the brief itself with `journal_brief`.
 
-## Первые шаги
+## First steps
 
-1. Открыть чат в папке проекта и выполнить `/agent-logbook:connect` (можно указать папку:
-   `/agent-logbook:connect <папка>`). Журнал собирается в фоне и прочитает **всю** историю чатов
-   этой папки — подключайте только свои проекты.
-2. `/agent-logbook:status` — готов ли журнал: сколько чатов и коммитов собрано.
-3. `/agent-logbook:view` — открыть страницу журнала в браузере.
+1. Open a chat in the project folder and run `/agent-logbook:connect` (you can name the folder:
+   `/agent-logbook:connect <folder>`). The journal is built in the background and reads the
+   **whole** chat history of this folder, so connect only your own projects.
+2. `/agent-logbook:status` — whether the journal is ready: how many chats and commits it holds.
+3. `/agent-logbook:view` — open the journal page in the browser.
 
-Подключить нельзя корень диска и домашнюю папку: в журнал попали бы все чаты компьютера. В агентах
-без команд (Codex) то же делает инструмент `journal_connect` — попросите агента подключить папку.
+You cannot connect a drive root or your home folder: every chat on the computer would end up in the
+journal. In agents without commands (Codex) the `journal_connect` tool does the same: ask the agent
+to connect the folder.
 
-С этого момента в каждом новом чате этой папки (и её вложенных папок) агент получает сводку и
-может искать по журналу. Журнал обновляется сам: при старте чата и при обращении к нему.
+From then on, every new chat in this folder (and its subfolders) gets the brief and can search the
+journal. The journal updates itself: when a chat starts and whenever it is asked.
 
-## Профиль проекта
+## Project profile
 
-Чаще всего профиль не нужен. При подключении журнал сам ищет папку задач — папку Markdown-файлов,
-в заголовке которых есть поле статуса, — распознаёт имена полей и значений и строку проверки. Если
-у проекта ещё нет профиля, найденное записывается в `projects.json` этой машины (см. ниже); в сам
-проект журнал ничего не пишет и ни о чём не спрашивает. Ответ connect говорит, что найдено и что не
-распознано; нераспознанное остаётся как есть, его можно дописать в профиль.
+Usually no profile is needed. When you connect a project, the journal looks for its task folder (a
+folder of Markdown files whose front matter has a status field), recognises the field and value
+names and the check line. If the project has no profile yet, what was found is written to this
+machine's `projects.json` (see below); the journal writes nothing into the project and asks
+nothing. The connect answer says what was found and what was not recognised; what was not
+recognised stays as it is, and you can add it to the profile.
 
-Если проект называет задачи, поля и статусы так, что журнал их не узнал, ведёт свои документы о
-состоянии или хочет задать языки, положите в корень проекта файл `.agent-logbook.json`. Все
-разделы и ключи необязательны; чего нет, берётся по умолчанию. Пример:
+If the project names its tasks, fields and statuses in a way the journal did not recognise, keeps
+its own state documents, or wants to set languages, put a `.agent-logbook.json` file in the project
+root. Every section and key is optional; anything missing takes the default. An example:
 
 ```json
 {
@@ -222,75 +245,75 @@ codex mcp add journal -- node "<папка плагина>/server/journal.mjs" m
     },
     "checkPrefix": "Verify:",
     "groupOrder": ["core", "docs"],
-    "labels": { "group": { "core": "Ядро", "docs": "Документация" } }
+    "labels": { "group": { "core": "Core", "docs": "Documentation" } }
   },
   "stateDocs": ["docs/STATE.md"],
   "handoffs": { "dirs": ["docs"], "prefix": "HANDOFF-" },
   "dashboard": { "file": "docs/dashboard.json", "sections": { "decisions": "decided" } },
-  "languages": ["ru", "de"],
-  "uiLanguage": "ru",
-  "secretWords": ["PIN-код", "passphrase"]
+  "languages": ["en", "de"],
+  "uiLanguage": "en",
+  "secretWords": ["PIN code", "passphrase"]
 }
 ```
 
-- `tasks.dir` — папка задач (по умолчанию `tasks`); `tasks.ref` — ветка, из которой читаются задачи
-  (по умолчанию `main`, затем `master`).
-- `tasks.fields` — своё имя поля → стандартное; `tasks.values` — своё значение → стандартное для
-  `status`, `owner`, `priority`. Инструменты отвечают стандартными словами, а подсказку «как взять
-  и закрыть задачу» дают словами проекта.
-- `tasks.checkPrefix` — начало строки «что проверить» (по умолчанию `Check:`); `tasks.groupOrder` —
-  какая группа важнее; `tasks.labels` — подписи на странице для `owner`, `group`, `area`.
-- `stateDocs` — где проект описывает своё текущее состояние, в добавление к стандартным
-  `STATUS.md`, `TODO.md`, `HANDOFF.md` (в корне и в `docs/`). `handoffs` — серия датированных
-  передач `<prefix>ГГГГ-ММ-ДД….md` в папках `dirs`; в сводку попадает самая новая.
-- `dashboard` — своя панель задач проекта: JSON-файл или HTML-страница, где данные лежат в
-  `const DATA = {…}` (имя переменной — ключ `variable`). Страница журнала показывает из неё разделы
-  `focus`, `waiting`, `queue`, `groups`, `blocks`, `decisions`, `table`, `flags`, `docs`; `sections` —
-  стандартное имя раздела → ключ в файле, `titles` — свои заголовки. Файл только читается, код из него
-  не выполняется.
-- `languages` — коды языков, на которых искать (`en`, `de`, `ru` …); заменяют языки, которые журнал
-  определил сам, в подсказке к поиску и в поле `languages` ответа `journal_search`.
-- `uiLanguage` — язык страницы и командной строки: `en` или `ru` (см. «Языки»).
-- `secretWords` — свои слова, после которых значение в выдержках скрывается, как после «пароль»
-  (`PIN-код: …`). Действуют для всех подключённых проектов сразу, но только на то, что журнал
-  прочитает после правки профиля: чат, который больше не меняется, и уже собранные коммиты остаются
-  как были.
-- Все пути — внутри проекта; путь наружу журнал пропускает.
+- `tasks.dir` — the task folder (default `tasks`); `tasks.ref` — the branch tasks are read from
+  (default `main`, then `master`).
+- `tasks.fields` — your field name → the standard one; `tasks.values` — your value → the standard
+  one for `status`, `owner`, `priority`. The tools answer in standard words, and the hint "how to
+  take and close a task" uses the project's words.
+- `tasks.checkPrefix` — how the "what to check" line starts (default `Check:`); `tasks.groupOrder` —
+  which group matters more; `tasks.labels` — labels on the page for `owner`, `group`, `area`.
+- `stateDocs` — where the project describes its current state, in addition to the standard
+  `STATUS.md`, `TODO.md`, `HANDOFF.md` (in the root and in `docs/`). `handoffs` — a series of dated
+  handoffs `<prefix>YYYY-MM-DD….md` in the folders `dirs`; the newest one goes into the brief.
+- `dashboard` — the project's own task panel: a JSON file, or an HTML page whose data sits in
+  `const DATA = {…}` (the variable name is the `variable` key). The journal page shows its sections
+  `focus`, `waiting`, `queue`, `groups`, `blocks`, `decisions`, `table`, `flags`, `docs`; `sections`
+  maps a standard section name → the key in the file, `titles` sets your own headings. The file is
+  only read; no code from it runs.
+- `languages` — the language codes to search in (`en`, `de`, `ru` …); they replace the languages
+  the journal detected itself, in the search hint and in the `languages` field of the
+  `journal_search` answer.
+- `uiLanguage` — the language of the page and the command line: `en` or `ru` (see "Languages").
+- `secretWords` — your own words after which a value in quotes is masked, as after "password"
+  (`PIN code: …`). They apply to all connected projects at once, but only to what the journal reads
+  after the profile changes: a chat that no longer changes and commits already collected stay as
+  they were.
+- All paths are inside the project; the journal skips a path that leads outside.
 
-Описать проект, не трогая его репозиторий, можно на одном компьютере: файл `projects.json` в папке
-данных журнала, ключ — полный путь к папке проекта, значение — такой же профиль. Он перекрывает
-`.agent-logbook.json` по разделам. Туда же журнал записывает найденное при подключении.
+To describe a project on one computer without touching its repository, use the `projects.json` file
+in the journal's data folder: the key is the full path of the project folder, the value is the same
+profile. It overrides `.agent-logbook.json` section by section. The journal also writes what it
+found when connecting there.
 
-## Языки
+## Languages
 
-Журнал сам определяет, на каких языках идёт работа: отдельно для реплик людей, ответов агентов и
-сообщений коммитов, по последним 300 каждого вида. Язык текста узнаётся по письменности и частым
-коротким словам, без словарей (22 языка); языком проекта считается тот, на котором написана хотя бы
-шестая часть текстов. Сводка называет их одной строкой, например «Languages: people write Russian;
-commits are in German. Search in each of Russian, German.»; ответ `journal_search` — полем
-`languages`. Так агент знает, на каких языках искать.
+The journal detects by itself which languages the work is in: separately for people's messages,
+agents' replies and commit messages, from the latest 300 of each kind. A text's language is
+recognised by its script and frequent short words, without dictionaries (22 languages); a language
+counts for the project if at least one sixth of the texts are in it. The brief names them in one
+line, for example "Languages: people write Russian; commits are in German. Search in each of
+Russian, German."; the `journal_search` answer has a `languages` field. So the agent knows which
+languages to search in.
 
-Служебные тексты для агента — сводка, подсказки и ошибки инструментов — всегда на английском.
-Страница журнала и командная строка — на английском или русском. Язык выбирается так:
+Texts for the agent — the brief, the hints and the tool errors — are always in English. The journal
+page and the command line are in English or Russian, chosen in this order:
 
-1. `uiLanguage` в профиле проекта;
-2. переменная окружения `AGENT_LOGBOOK_LANG` (`en` или `ru`);
-3. язык, на котором пишут люди этого проекта;
-4. язык системы;
-5. английский.
+1. `uiLanguage` in the project profile;
+2. the environment variable `AGENT_LOGBOOK_LANG` (`en` or `ru`);
+3. the language the project's people write in;
+4. the system language;
+5. English.
 
-Язык, для которого нет перевода (например, немецкий), пропускается. Язык людей стоит раньше языка
-системы: на компьютере, настроенном на одном языке, часто пишут на другом, а страницу читают они.
-Команды командной строки не про один проект (например, `status`, `sync`, справка) берут язык
-только из `AGENT_LOGBOOK_LANG` и системы.
+A language without a translation (German, for example) is skipped. The people's language comes
+before the system language: on a computer set up in one language people often write in another,
+and they are the ones who read the page. Command-line commands that are not about one project (for
+example `status`, `sync`, help) take the language only from `AGENT_LOGBOOK_LANG` and the system.
 
-Переопределить догадку можно профилем: `languages` — языки для поиска, `uiLanguage` — язык
-страницы и командной строки.
+## Permissions
 
-## Разрешения
-
-Каждый вызов MCP-инструмента Claude Code по умолчанию спрашивает разрешение. Шесть читающих
-инструментов можно разрешить заранее — через `/permissions` или в `permissions.allow` настроек:
+By default Claude Code asks for permission on every MCP tool call. The six reading tools can be
+allowed in advance, with `/permissions` or in `permissions.allow` in the settings:
 
 ```json
 {
@@ -307,73 +330,96 @@ commits are in German. Search in each of Russian, German.»; ответ `journal
 }
 ```
 
-`journal_connect` и `journal_open` лучше оставить с подтверждением.
+Better keep `journal_connect` and `journal_open` behind a confirmation.
 
-## Где данные и что журнал читает
+## Data and what the journal reads
 
-Папка данных:
+The data folder:
 
 - Windows: `%LOCALAPPDATA%\AgentLogbook`;
-- macOS и Linux: `~/.agent-logbook`;
-- другое место — переменная окружения `AGENT_LOGBOOK_HOME`.
+- macOS and Linux: `~/.agent-logbook`;
+- elsewhere — the environment variable `AGENT_LOGBOOK_HOME`.
 
-В ней: `journal.sqlite` (сам журнал), `connected.json` (подключённые папки), `view/*.html`
-(страницы), `hook.log` (сбои хука; файл только дописывается, его можно удалить),
-`projects.json` (профили проектов: ваши или найденные при подключении).
+It holds `journal.sqlite` (the journal itself), `connected.json` (connected folders), `view/*.html`
+(pages), `hook.log` and `sync.log` (failures of the hook and of the background refresh, shown by
+`journal_status`; the files are only appended to and can be deleted), and
+`projects.json` (project profiles: yours, or found when connecting).
 
-Что журнал читает (только читает):
+What the journal reads (read only), and only for folders you connected yourself:
 
-- чаты Claude Code — `~/.claude/projects`;
-- локальные сессии Cowork — Windows `%APPDATA%\Claude\local-agent-mode-sessions`, macOS
+- Claude Code chats — `~/.claude/projects`;
+- local Cowork sessions — Windows `%APPDATA%\Claude\local-agent-mode-sessions`, macOS
   `~/Library/Application Support/Claude/local-agent-mode-sessions`, Linux
   `~/.config/Claude/local-agent-mode-sessions`;
-- чаты Codex — `~/.codex/sessions` и `~/.codex/archived_sessions`;
-- git log подключённых папок.
+- Codex chats — `~/.codex/sessions` and `~/.codex/archived_sessions`;
+- the git log of connected folders.
 
-Страница журнала — локальный файл с выдержками из ваших личных чатов. Не публикуйте её и не
-отправляйте.
+It does not read claude.ai chats, Claude's memory or anything in the cloud, and it builds no
+profile of you: it gives the agent working in a project the history of that same project, on the
+same computer.
 
-## Как выключить и удалить
+The journal page is a local file with excerpts from your own chats. Do not publish it or send it to
+anyone.
 
-- **Выключить:** `/plugin` → плагин `agent-logbook` → Disable, или
+## What runs on your computer
+
+Everything below runs locally under your user account; the plugin makes no network requests.
+
+- **`node server/journal.mjs mcp`** — the MCP server, started by Claude Code (or Codex) for the
+  session.
+- **`node server/journal.mjs hook-start`** — the SessionStart hook in Claude Code: prints the brief
+  (at most 2000 characters) and exits; it starts no other process.
+- **`node server/journal.mjs refresh`** and **`connect`** — background processes the MCP server
+  starts to read new chats and commits into the journal (when it is older than ten minutes, and
+  after a folder is connected); they exit when done.
+- **`git`** — read-only commands (`log`, `rev-list`, `rev-parse`, `branch`, `for-each-ref`,
+  `ls-tree`, `cat-file`) in connected folders.
+- **The system file opener** (`explorer.exe`, `open` or `xdg-open`) — only for `journal_open` and
+  `/agent-logbook:view`, to show the local journal page.
+- **`node server/journal.mjs view --serve`** — only when you run it yourself from a terminal: a
+  page server bound to `127.0.0.1:47770`, reachable from this computer only.
+
+## Turning it off and removing it
+
+- **Turn off:** `/plugin` → the `agent-logbook` plugin → Disable, or
   `claude plugin disable agent-logbook@agent-logbook`.
-- **Удалить плагин:** `claude plugin uninstall agent-logbook@agent-logbook`, затем, если
-  маркетплейс больше не нужен, `claude plugin marketplace remove agent-logbook`.
-- **Удалить данные:** журнал живёт отдельно от плагина и после удаления плагина остаётся. Удалить
-  папку данных вручную (см. выше).
-- **Отключить одну папку:** `node "<папка плагина>/server/journal.mjs" disconnect "<папка проекта>"`.
-  Собранное остаётся в журнале, но сводка и поиск для этой папки больше не срабатывают. При
-  установке из папки `<папка плагина>` — это она сама; при установке из git-репозитория — копия в
-  кэше: `~/.claude/plugins/cache/agent-logbook/agent-logbook/<версия>` (Claude Code),
-  `~/.codex/plugins/cache/agent-logbook/agent-logbook/<версия>` (Codex).
-- Если журнал раньше подключали вручную (MCP-сервер или хук SessionStart в своих настройках),
-  уберите их — иначе сводка придёт дважды.
+- **Remove the plugin:** `claude plugin uninstall agent-logbook@agent-logbook`, then, if you no
+  longer need the marketplace, `claude plugin marketplace remove agent-logbook`.
+- **Remove the data:** the journal lives apart from the plugin and stays after the plugin is
+  removed. Delete the data folder by hand (see above).
+- **Disconnect one folder:** `node "<plugin folder>/server/journal.mjs" disconnect "<project folder>"`.
+  What was collected stays in the journal, but the brief and search no longer work for that folder.
+  When installed from a folder, `<plugin folder>` is that folder; when installed from a git
+  repository, it is the cached copy: `~/.claude/plugins/cache/agent-logbook/agent-logbook/<version>`
+  (Claude Code), `~/.codex/plugins/cache/agent-logbook/agent-logbook/<version>` (Codex).
+- If you connected the journal by hand before (an MCP server or a SessionStart hook in your own
+  settings), remove them, or the brief comes twice.
 
-## Ограничения и что не проверено
+## Limitations and what is not verified
 
-- В приложении Claude Desktop хуки SessionStart сейчас почти не срабатывают — журнал всё равно
-  приходит через MCP.
-- Хук SessionStart в живой сессии Claude Code проверен только эмуляцией запуска без оболочки: тот же
-  `node` с теми же аргументами, из папки с пробелом в пути.
-- Cowork на своём компьютере — не проверено. Cowork в облаке и чат claude.ai не поддерживаются:
-  журнал живёт на вашем компьютере.
-- Загрузка `.zip` в приложение: файл сам не обновляется
-  ([#93553](https://github.com/anthropics/claude-code/issues/93553)); нельзя вместе с установкой из
-  маркетплейса.
-- Codex: установка проверена (`codex plugin add`; `codex mcp list` показывает `journal` с папкой
-  плагина как рабочей), работа в живой сессии — нет: запускается ли сервер с этим списком
-  переменных окружения, доходят ли до модели инструкции MCP-сервера. Хука в Codex нет, сводку агент
-  берёт сам через `journal_brief`.
-- macOS и Linux не проверялись: пути данных и Cowork, открытие страницы (`open`, `xdg-open`). На
-  macOS приложение, запущенное не из терминала, может не видеть `node` из `PATH` оболочки.
-- Не проверено, срабатывает ли предразрешение инструментов в командах (`allowed-tools`) и
-  подставляется ли `${CLAUDE_PROJECT_DIR}` в тексте команд. В худшем случае Claude Code спросит
-  разрешение, а агент возьмёт свою рабочую папку.
-- Минимум Claude Code 2.1.139 взят из документации (форма хука без оболочки); проверенная версия
-  указана в «Требованиях».
+- In the Claude Desktop app SessionStart hooks rarely fire at the moment; the journal still arrives
+  through MCP.
+- The SessionStart hook in a live Claude Code session is verified only by emulating a shell-less
+  launch: the same `node` with the same arguments, from a folder with a space in its path.
+- Cowork on your own computer is not verified. Cowork in the cloud and claude.ai chat are not
+  supported: the journal lives on your computer.
+- Uploading the `.zip` into the app: the file does not update itself
+  ([#93553](https://github.com/anthropics/claude-code/issues/93553)), and it cannot be combined with
+  the marketplace installation.
+- Codex: installation is verified (`codex plugin add`; `codex mcp list` shows `journal` with the
+  plugin folder as its working folder); work in a live session is not: whether the server starts
+  with this list of environment variables, and whether the MCP server's instructions reach the
+  model. Codex has no hook; the agent fetches the brief itself with `journal_brief`.
+- macOS and Linux are not tested: the data and Cowork paths, opening the page (`open`, `xdg-open`).
+  On macOS an app not started from a terminal may not see `node` from the shell's `PATH`.
+- Not verified: whether pre-allowing tools in commands (`allowed-tools`) works, and whether
+  `${CLAUDE_PROJECT_DIR}` is substituted in command text. At worst Claude Code asks for permission
+  and the agent uses its own working folder.
+- The Claude Code minimum of 2.1.139 comes from the documentation (the shell-less hook form); the
+  tested version is in "Requirements".
 
-## Лицензия
+## License
 
-MIT — файл `LICENSE`. Шрифты страницы (IBM Plex Sans, IBM Plex Mono, Bricolage Grotesque) — SIL
-Open Font License 1.1, текст в `view/fonts/FONTS-OFL-1.1.txt`. Откуда взято оформление страницы —
-`view/NOTICE.md`.
+MIT — see `LICENSE`. The page fonts (IBM Plex Sans, IBM Plex Mono, Bricolage Grotesque) are under
+the SIL Open Font License 1.1, text in `view/fonts/FONTS-OFL-1.1.txt`. Where the page design comes
+from — `view/NOTICE.md`.

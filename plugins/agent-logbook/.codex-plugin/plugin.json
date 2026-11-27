@@ -1,7 +1,7 @@
 {
   "name": "agent-logbook",
-  "version": "1.1.0",
-  "description": "Журнал проекта: прошлые чаты и git log папки проекта — поиск, сводка, задачи. Навык и MCP-сервер, без хука.",
+  "version": "1.1.1",
+  "description": "Project journal: past chats and the git log of a project folder - search, a brief, tasks. A skill and an MCP server, no hook.",
   "author": {
     "name": "Andrej Hermann"
   },
@@ -18,7 +18,7 @@
   "hooks": {},
   "interface": {
     "displayName": "Agent Logbook",
-    "shortDescription": "Прошлые чаты и git log проекта: поиск и сводка",
+    "shortDescription": "Past chats and git log of a project: search and a brief",
     "developerName": "Andrej Hermann",
     "category": "Productivity"
   }
