@@ -1,6 +1,6 @@
 {
   "name": "project-logbook",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Every new chat starts knowing what the earlier ones did: searches past Claude Code, Cowork and Codex chats and the git log of a project folder, gives a short brief at the start of a chat, shows open tasks from the project files. Runs entirely on your computer, only reads its sources, no dependencies (Node.js 22.13+).",
   "author": {
     "name": "Andrej Hermann"

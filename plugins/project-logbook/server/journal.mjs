@@ -30,7 +30,7 @@ try {
 const SCHEMA_VERSION = 2;
 // Raise whenever parsing or redaction changes, so every transcript is read again instead of
 // keeping old mistakes (7: a review found unredacted passwords and titles).
-const PARSER_VERSION = 11;
+const PARSER_VERSION = 12;
 const MAX_MESSAGE_CHARS = 20000;
 const HOME = os.homedir();
 const CLAUDE_PROJECTS = path.join(HOME, '.claude', 'projects');
@@ -479,7 +479,11 @@ function parseCodex(file) {
       if (GIT_COMMIT_COMMAND.test(args)) commitCalls.set(p.call_id, { command: args.replace(/\\\\/g, '\\'), cwd });
     } else if ((p.type === 'function_call_output' || p.type === 'custom_tool_call_output') && commitCalls.has(p.call_id)) {
       const call = commitCalls.get(p.call_id);
-      noteCommit(s, call.command, textOf(p.output?.content ?? p.output), r.timestamp, call.cwd);
+      // An exec cell answers with a list of text blocks, one of them a JSON envelope around the
+      // command's output; each block is unwrapped on its own, so a commit line inside it is found.
+      const out = p.output?.content ?? p.output;
+      const text = Array.isArray(out) ? out.map((b) => unwrapResult(typeof b === 'string' ? b : b?.text ?? '')).join('\n') : textOf(out);
+      noteCommit(s, call.command, text, r.timestamp, call.cwd);
       commitCalls.delete(p.call_id);
     }
   };
