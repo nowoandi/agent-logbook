@@ -1,10 +1,12 @@
 {
   "name": "project-logbook",
-  "version": "2.0.0",
-  "description": "Project journal for AI agents: past Claude Code, Cowork and Codex chats and the folder's git log - search, a brief at the start of a chat, tasks from project files. All local, sources are only read, no dependencies (Node.js 22.13+).",
+  "version": "2.0.1",
+  "description": "Every new chat starts knowing what the earlier ones did: searches past Claude Code, Cowork and Codex chats and the git log of a project folder, gives a short brief at the start of a chat, shows open tasks from the project files. Runs entirely on your computer, only reads its sources, no dependencies (Node.js 22.13+).",
   "author": {
     "name": "Andrej Hermann"
   },
+  "homepage": "https://github.com/nowoandi/project-logbook",
+  "repository": "https://github.com/nowoandi/project-logbook",
   "license": "MIT",
   "keywords": [
     "journal",

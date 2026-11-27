@@ -1,6 +1,6 @@
 ---
-description: Открыть в браузере локальную страницу журнала проекта — прошлые чаты, коммиты и задачи
-argument-hint: "[папка проекта]"
+description: "Open the local page of the project journal in the browser: past chats, commits and tasks"
+argument-hint: "[project folder]"
 allowed-tools:
   - mcp__plugin_project-logbook_journal__journal_open
 ---

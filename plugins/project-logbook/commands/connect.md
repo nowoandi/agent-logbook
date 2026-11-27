@@ -1,6 +1,6 @@
 ---
-description: Подключить журнал к папке проекта (по умолчанию — к текущей); он соберётся из прошлых чатов и git log
-argument-hint: "[папка проекта]"
+description: "Connect the journal to a project folder (the current one by default); it is built from past chats and the git log"
+argument-hint: "[project folder]"
 disable-model-invocation: true
 allowed-tools:
   - mcp__plugin_project-logbook_journal__journal_connect

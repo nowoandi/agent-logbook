@@ -421,6 +421,11 @@ Everything below runs locally under your user account; the plugin makes no netwo
 - The Claude Code minimum of 2.1.139 comes from the documentation (the shell-less hook form); the
   tested version is in "Requirements".
 
+## Support
+
+Questions, bug reports and ideas: the Issues page of the plugin's GitHub repository (the address
+is in `homepage` of `.claude-plugin/plugin.json`). There is no e-mail support.
+
 ## License
 
 MIT — see `LICENSE`. The page fonts (IBM Plex Sans, IBM Plex Mono, Bricolage Grotesque) are under

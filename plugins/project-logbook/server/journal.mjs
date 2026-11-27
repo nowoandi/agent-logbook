@@ -47,8 +47,8 @@ function dataRoot() {
   if (process.env.PROJECT_LOGBOOK_HOME) return path.resolve(process.env.PROJECT_LOGBOOK_HOME);
   const win = process.platform === 'win32' && process.env.LOCALAPPDATA;
   const root = win ? path.join(process.env.LOCALAPPDATA, 'ProjectLogbook') : path.join(HOME, '.project-logbook');
-  // Up to 1.1.1 the plugin was called agent-logbook: its journal moves to the new name once. While a
-  // server of the old version still holds the files open the move fails, and the old folder serves.
+  // Up to 1.1.1 the plugin was called agent-logbook: its journal moves to the new name once. If the
+  // move fails (another program holds the folder), the old folder serves and the move is tried again.
   if (!fs.existsSync(root)) {
     const old = win ? path.join(process.env.LOCALAPPDATA, 'AgentLogbook') : path.join(HOME, '.agent-logbook');
     if (fs.existsSync(old)) { try { fs.renameSync(old, root); } catch { return old; } }

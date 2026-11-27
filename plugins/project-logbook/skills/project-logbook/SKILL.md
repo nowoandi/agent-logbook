@@ -1,6 +1,6 @@
 ---
 name: project-logbook
-description: "Журнал прошлых чатов и коммитов проекта (инструменты journal_*). Использовать в начале задачи в папке проекта, если блока «Project journal for …» в контексте нет (у папки нет журнала — работать без него), и при вопросе о прошлой работе: где остановились, что решили или пробовали, обсуждали ли это, почему сделано так; перед работой, которая могла уже делаться; при выборе задачи. Не использовать для вопросов о текущем состоянии кода и сборки — на них отвечают git и документы."
+description: "Journal of a project's past chats and commits (journal_* tools). Use at the start of a task in a project folder if no «Project journal for …» block is in context (no journal there: work without it), and for questions about earlier work: where it stopped, what was decided or tried, whether it was discussed, why it was done so; before work that may already be done; when choosing a task. Not for the current state of code or build: git and the documents answer that."
 ---
 
 # Журнал проекта

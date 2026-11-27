@@ -9,8 +9,8 @@
     {
       "name": "project-logbook",
       "source": "./",
-      "description": "Project journal: search past chats and git log, a brief at the start of a chat, tasks",
-      "version": "2.0.0",
+      "description": "Project journal: search past chats and the git log of a project, a brief at the start of a chat, open tasks. Local only.",
+      "version": "2.0.1",
       "category": "productivity"
     }
   ]

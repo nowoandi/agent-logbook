@@ -1,10 +1,12 @@
 {
   "name": "project-logbook",
-  "version": "2.0.0",
-  "description": "Project journal: past chats and the git log of a project folder - search, a brief, tasks. A skill and an MCP server, no hook.",
+  "version": "2.0.1",
+  "description": "Project journal: past Claude Code, Cowork and Codex chats and the git log of a project folder - search, a brief, open tasks. Runs on your computer only. A skill and an MCP server, no hook.",
   "author": {
     "name": "Andrej Hermann"
   },
+  "homepage": "https://github.com/nowoandi/project-logbook",
+  "repository": "https://github.com/nowoandi/project-logbook",
   "license": "MIT",
   "keywords": [
     "journal",

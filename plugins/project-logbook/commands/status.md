@@ -1,5 +1,5 @@
 ---
-description: Показать состояние журнала проекта — какие папки подключены, сколько в них чатов и коммитов, когда журнал обновлялся
+description: "Show the state of the project journal: which folders are connected, how many chats and commits they hold, when the journal was last refreshed"
 allowed-tools:
   - mcp__plugin_project-logbook_journal__journal_status
 ---

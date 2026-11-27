@@ -407,6 +407,11 @@ commits are in German. Search in each of Russian, German.»; ответ `journal
 - Минимум Claude Code 2.1.139 взят из документации (форма хука без оболочки); проверенная версия
   указана в «Требованиях».
 
+## Поддержка
+
+Вопросы, ошибки и идеи — на странице Issues репозитория плагина на GitHub (адрес — в поле
+`homepage` файла `.claude-plugin/plugin.json`). Поддержки по почте нет.
+
 ## Лицензия
 
 MIT — файл `LICENSE`. Шрифты страницы (IBM Plex Sans, IBM Plex Mono, Bricolage Grotesque) — SIL
