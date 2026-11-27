@@ -42,10 +42,18 @@ const APP_DATA = process.platform === 'win32' ? process.env.APPDATA
 const COWORK_ROOT = APP_DATA ? path.join(APP_DATA, 'Claude', 'local-agent-mode-sessions') : null;
 
 // The journal is shared by every agent on the machine, so it lives in its own folder rather than in
-// one agent's plugin data, which a host deletes with the plugin. AGENT_LOGBOOK_HOME moves it.
+// one agent's plugin data, which a host deletes with the plugin. PROJECT_LOGBOOK_HOME moves it.
 function dataRoot() {
-  if (process.env.AGENT_LOGBOOK_HOME) return path.resolve(process.env.AGENT_LOGBOOK_HOME);
-  return process.platform === 'win32' && process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'AgentLogbook') : path.join(HOME, '.agent-logbook');
+  if (process.env.PROJECT_LOGBOOK_HOME) return path.resolve(process.env.PROJECT_LOGBOOK_HOME);
+  const win = process.platform === 'win32' && process.env.LOCALAPPDATA;
+  const root = win ? path.join(process.env.LOCALAPPDATA, 'ProjectLogbook') : path.join(HOME, '.project-logbook');
+  // Up to 1.1.1 the plugin was called agent-logbook: its journal moves to the new name once. While a
+  // server of the old version still holds the files open the move fails, and the old folder serves.
+  if (!fs.existsSync(root)) {
+    const old = win ? path.join(process.env.LOCALAPPDATA, 'AgentLogbook') : path.join(HOME, '.agent-logbook');
+    if (fs.existsSync(old)) { try { fs.renameSync(old, root); } catch { return old; } }
+  }
+  return root;
 }
 
 const DB_FILE = () => path.join(dataRoot(), 'journal.sqlite');
@@ -1108,7 +1116,7 @@ const CLI = {
   hook-start                             SessionStart hook: a short brief for the context (read-only)
 
   --json  machine-readable output
-  AGENT_LOGBOOK_LANG=ru|en  language of this output and of the page`,
+  PROJECT_LOGBOOK_LANG=ru|en  language of this output and of the page`,
   },
   ru: {
     via: { cwd: '', folder: ' (папка в Cowork)', edits: ' (правил файлы проекта)', commits: ' (коммитил в проект)' },
@@ -1147,7 +1155,7 @@ const CLI = {
   hook-start                             хук SessionStart: короткая справка в контекст (только чтение)
 
   --json  машиночитаемый вывод
-  AGENT_LOGBOOK_LANG=ru|en  язык этого вывода и страницы`,
+  PROJECT_LOGBOOK_LANG=ru|en  язык этого вывода и страницы`,
   },
 };
 const cliText = (lang) => CLI[lang] ?? CLI.en;
@@ -1373,14 +1381,14 @@ function languagesLine(l) {
 const UI_LANGUAGES = ['en', 'ru'];
 
 /**
- * The language of the page and of the command line: the project's profile, then AGENT_LOGBOOK_LANG,
+ * The language of the page and of the command line: the project's profile, then PROJECT_LOGBOOK_LANG,
  * then the language people write in this project, then the system's, then English. People's own
  * language comes before the system's: a machine set up in one language often serves people who
  * write in another, and the page is read by them.
  */
 function uiLanguage({ profile = {}, people = [] } = {}) {
   const system = (() => { try { return Intl.DateTimeFormat().resolvedOptions().locale; } catch { return ''; } })();
-  for (const c of [profile.uiLanguage, process.env.AGENT_LOGBOOK_LANG, ...people, system]) {
+  for (const c of [profile.uiLanguage, process.env.PROJECT_LOGBOOK_LANG, ...people, system]) {
     const code = String(c ?? '').toLowerCase().slice(0, 2);
     if (UI_LANGUAGES.includes(code)) return code;
   }
@@ -1689,7 +1697,7 @@ async function serveMcp(explicitRoot) {
       if (message.method.startsWith('notifications/')) continue;
       if (message.method === 'initialize') {
         const asked = message.params?.protocolVersion;
-        reply({ result: { protocolVersion: MCP_VERSIONS.includes(asked) ? asked : MCP_VERSIONS[0], capabilities: { tools: {} }, serverInfo: { name: 'agent-logbook', version: `${SCHEMA_VERSION}.${PARSER_VERSION}` }, instructions: MCP_INSTRUCTIONS } });
+        reply({ result: { protocolVersion: MCP_VERSIONS.includes(asked) ? asked : MCP_VERSIONS[0], capabilities: { tools: {} }, serverInfo: { name: 'project-logbook', version: `${SCHEMA_VERSION}.${PARSER_VERSION}` }, instructions: MCP_INSTRUCTIONS } });
         // The server starts with every chat, so this is where the journal catches up; the start hook
         // stays read-only.
         try { const db = reader(); const at = db && syncedAt(db); if (connectedRoots().length && (!at || Date.now() - Date.parse(at) > STALE_MS)) await refreshInBackground(); } catch {}
@@ -1713,11 +1721,11 @@ async function serveMcp(explicitRoot) {
 /*
  * What differs from one project to the next — where its tasks live and what their fields and values
  * are called, which file holds a dashboard, which documents state the current situation — is data,
- * not code. A project may carry `.agent-logbook.json`; `projects.json` in the journal's data folder
+ * not code. A project may carry `.project-logbook.json`; `projects.json` in the journal's data folder
  * overrides it on one machine, so a project can be described without touching its repository.
  * Without either, the neutral defaults below apply.
  */
-const PROFILE_FILE = '.agent-logbook.json';
+const PROFILE_FILE = '.project-logbook.json';
 const PROJECTS_FILE = () => path.join(dataRoot(), 'projects.json');
 
 function readJson(file) {
@@ -2385,7 +2393,7 @@ async function view(root, { open = false, serve = false, port = 47770 } = {}) {
 async function main(argv) {
   const json = argv.includes('--json');
   // Commands about one project speak its people's language (as its page does); the rest follow
-  // AGENT_LOGBOOK_LANG and the system.
+  // PROJECT_LOGBOOK_LANG and the system.
   let T = cliText(uiLanguage());
   const forProject = (db, root) => { const profile = projectProfile(root); T = cliText(uiLanguage({ profile, people: db ? projectLanguages(db, root, profile).people : [] })); };
   const beforeArg = argv.find((a) => a.startsWith('--before='))?.slice('--before='.length);

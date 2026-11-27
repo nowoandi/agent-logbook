@@ -3,7 +3,7 @@ description: Подключить журнал к папке проекта (п�
 argument-hint: "[папка проекта]"
 disable-model-invocation: true
 allowed-tools:
-  - mcp__plugin_agent-logbook_journal__journal_connect
+  - mcp__plugin_project-logbook_journal__journal_connect
 ---
 
 # Подключить журнал проекта
@@ -16,7 +16,7 @@ allowed-tools:
 2. Вызови инструмент `journal_connect` один раз, `cwd` = эта папка.
 3. Ответь коротко: какая папка подключена (`connected`; если она выше переданной — подключён весь
    git-репозиторий); журнал собирается в фоне — прошлые чаты и git log читаются от минуты и дольше,
-   готовность покажет `/agent-logbook:status`. В следующих чатах этой папки сводка журнала придёт
+   готовность покажет `/project-logbook:status`. В следующих чатах этой папки сводка журнала придёт
    при старте или агент запросит её сам.
    Если в ответе есть `profileNote`, добавь одну-две фразы о задачах проекта:
    - есть `profile.skipped` — файл `projects.json` в настройках этой машины не разобран (это не

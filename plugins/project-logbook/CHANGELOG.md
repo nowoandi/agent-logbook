@@ -1,5 +1,16 @@
 # Изменения
 
+## 2.0.0
+
+- Новое имя **project-logbook** (было agent-logbook): журнал ведётся по проекту, а не по агенту.
+  Меняются плагин и маркетплейс (`project-logbook@project-logbook`), репозиторий
+  `<владелец>/project-logbook`, команды `/project-logbook:…`, инструменты
+  `mcp__plugin_project-logbook_journal__…`, папка данных `ProjectLogbook` / `~/.project-logbook`,
+  профиль `.project-logbook.json`, переменные `PROJECT_LOGBOOK_HOME` и `PROJECT_LOGBOOK_LANG`.
+- Переход: удалить agent-logbook, добавить маркетплейс `<владелец>/project-logbook`, поставить
+  project-logbook. Журнал переезжает сам: при первом запуске папка `AgentLogbook` /
+  `~/.agent-logbook` переименовывается в новую, пока её не держит открытой сервер старой версии.
+
 ## 1.1.1
 
 - README по-английски (`README.md`), русский текст — в `README.ru.md`; в README добавлено, что журнал

@@ -1,4 +1,4 @@
-# Agent Logbook — журнал проекта для ИИ-агентов
+# Project Logbook — журнал проекта для ИИ-агентов
 
 Плагин для Claude Code (и Codex). Журнал хранит прошлые чаты Claude Code, Cowork (на своём
 компьютере) и Codex, привязанные к папке проекта, и git log этой папки. По ним он ищет, а в начале
@@ -43,9 +43,9 @@
 - **Страница журнала.** Один локальный HTML-файл без интернета: центр управления (где остановились,
   активность, задачи), карта чатов и областей кода, лента по дням. Страница и командная строка — на
   английском или русском (см. «Языки»).
-- **Навык `agent-logbook`** — когда и как агенту спрашивать журнал.
-- **Команды Claude Code:** `/agent-logbook:connect`, `/agent-logbook:view`,
-  `/agent-logbook:status`.
+- **Навык `project-logbook`** — когда и как агенту спрашивать журнал.
+- **Команды Claude Code:** `/project-logbook:connect`, `/project-logbook:view`,
+  `/project-logbook:status`.
 
 Пример файла задачи:
 
@@ -120,34 +120,37 @@ Check: что ещё не проверено.
 
 Репозиторий плагина — маркетплейс для Claude Code и Codex: в корне лежат
 `.claude-plugin/marketplace.json` (Claude Code) и `.agents/plugins/marketplace.json` (Codex), сам
-плагин — в папке `plugins/agent-logbook`. Папка плагина (она же zip) — тоже маркетплейс из одного
+плагин — в папке `plugins/project-logbook`. Папка плагина (она же zip) — тоже маркетплейс из одного
 плагина, но только для Claude Code.
+
+До версии 1.1.1 плагин назывался **agent-logbook**. Чтобы перейти, удалите `agent-logbook` и поставьте
+`project-logbook`, как ниже: журнал сам переедет в новую папку при первом запуске.
 
 ### Claude Code — основной путь
 
 Из git-репозитория:
 
 ```bash
-claude plugin marketplace add <владелец>/agent-logbook
-claude plugin install agent-logbook@agent-logbook
+claude plugin marketplace add <владелец>/project-logbook
+claude plugin install project-logbook@project-logbook
 ```
 
-Claude Code сам держит копию репозитория в `~/.claude/plugins/marketplaces/agent-logbook/` и копию
+Claude Code сам держит копию репозитория в `~/.claude/plugins/marketplaces/project-logbook/` и копию
 плагина в своём кэше — свою папку хранить не нужно. Для закрытого репозитория git на этом компьютере
 должен входить в него без вопросов (ssh-ключ или сохранённый пароль).
 
 Из папки на диске — сначала распакуйте zip туда, где папка останется навсегда, например
-`C:\Tools\claude-plugins\agent-logbook` (внутри неё должна лежать папка `.claude-plugin`):
+`C:\Tools\claude-plugins\project-logbook` (внутри неё должна лежать папка `.claude-plugin`):
 
 ```bash
-claude plugin marketplace add "C:\Tools\claude-plugins\agent-logbook"
-claude plugin install agent-logbook@agent-logbook
+claude plugin marketplace add "C:\Tools\claude-plugins\project-logbook"
+claude plugin install project-logbook@project-logbook
 ```
 
 - В `marketplace add` — полный путь к распакованной папке, а не к zip-файлу, и без `\` в конце
   (в PowerShell `"…\"` ломает путь). Ошибка «Invalid marketplace source format» значит, что вместо
   пути осталась заглушка вроде `<имя>` или стоит голое имя папки: относительный путь пишется как
-  `./agent-logbook`.
+  `./project-logbook`.
 - Плагин, добавленный из папки, работает прямо из неё: не переносите и не удаляйте её — иначе
   Claude Code напишет «failed to load: cache-miss». Поэтому не «Загрузки» и не «Временные».
 
@@ -163,7 +166,7 @@ claude --plugin-dir "<папка плагина>"
 
 - **Вкладка Code** использует плагины Claude Code: установленный выше плагин должен появиться и
   там. [не проверено]
-- **Загрузка файлом:** Customize › Plugins › Upload plugin, файл `agent-logbook-<версия>.zip`.
+- **Загрузка файлом:** Customize › Plugins › Upload plugin, файл `project-logbook-<версия>.zip`.
   Приложение принимает только `.zip`
   ([#40414](https://github.com/anthropics/claude-code/issues/40414)).
   - Загруженный плагин сам не обновляется
@@ -175,14 +178,14 @@ claude --plugin-dir "<папка плагина>"
 Codex ставит из маркетплейса репозитория навык и MCP-сервер, без хука:
 
 ```bash
-codex plugin marketplace add <владелец>/agent-logbook
-codex plugin add agent-logbook@agent-logbook
+codex plugin marketplace add <владелец>/project-logbook
+codex plugin add project-logbook@project-logbook
 ```
 
 Установка проверена (Codex 0.131, Windows): `codex plugin add` ставит плагин, `codex mcp list`
 показывает сервер `journal`. Работа в живой сессии Codex не проверена — для неё нужен вход в
 аккаунт. Папку плагина (zip) Codex как маркетплейс не принимает: ему нужен репозиторий или его
-локальная копия, где плагин лежит в `plugins/agent-logbook`.
+локальная копия, где плагин лежит в `plugins/project-logbook`.
 
 Без маркетплейса можно подключить только MCP-сервер:
 
@@ -191,16 +194,16 @@ codex mcp add journal -- node "<папка плагина>/server/journal.mjs" m
 ```
 
 Если в Codex журнал пуст, а в Claude Code полон, Codex не передал серверу переменные окружения с
-папкой данных. Тогда указать её явно: добавить `--env AGENT_LOGBOOK_HOME=<папка данных>` (см.
+папкой данных. Тогда указать её явно: добавить `--env PROJECT_LOGBOOK_HOME=<папка данных>` (см.
 «Где данные»). Хука в Codex нет: сводку агент берёт сам через `journal_brief`.
 
 ## Первые шаги
 
-1. Открыть чат в папке проекта и выполнить `/agent-logbook:connect` (можно указать папку:
-   `/agent-logbook:connect <папка>`). Журнал собирается в фоне и прочитает **всю** историю чатов
+1. Открыть чат в папке проекта и выполнить `/project-logbook:connect` (можно указать папку:
+   `/project-logbook:connect <папка>`). Журнал собирается в фоне и прочитает **всю** историю чатов
    этой папки — подключайте только свои проекты.
-2. `/agent-logbook:status` — готов ли журнал: сколько чатов и коммитов собрано.
-3. `/agent-logbook:view` — открыть страницу журнала в браузере.
+2. `/project-logbook:status` — готов ли журнал: сколько чатов и коммитов собрано.
+3. `/project-logbook:view` — открыть страницу журнала в браузере.
 
 Подключить нельзя корень диска и домашнюю папку: в журнал попали бы все чаты компьютера. В агентах
 без команд (Codex) то же делает инструмент `journal_connect` — попросите агента подключить папку.
@@ -217,7 +220,7 @@ codex mcp add journal -- node "<папка плагина>/server/journal.mjs" m
 распознано; нераспознанное остаётся как есть, его можно дописать в профиль.
 
 Если проект называет задачи, поля и статусы так, что журнал их не узнал, ведёт свои документы о
-состоянии или хочет задать языки, положите в корень проекта файл `.agent-logbook.json`. Все
+состоянии или хочет задать языки, положите в корень проекта файл `.project-logbook.json`. Все
 разделы и ключи необязательны; чего нет, берётся по умолчанию. Пример:
 
 ```json
@@ -270,7 +273,7 @@ codex mcp add journal -- node "<папка плагина>/server/journal.mjs" m
 
 Описать проект, не трогая его репозиторий, можно на одном компьютере: файл `projects.json` в папке
 данных журнала, ключ — полный путь к папке проекта, значение — такой же профиль. Он перекрывает
-`.agent-logbook.json` по разделам. Туда же журнал записывает найденное при подключении.
+`.project-logbook.json` по разделам. Туда же журнал записывает найденное при подключении.
 
 ## Языки
 
@@ -285,7 +288,7 @@ commits are in German. Search in each of Russian, German.»; ответ `journal
 Страница журнала и командная строка — на английском или русском. Язык выбирается так:
 
 1. `uiLanguage` в профиле проекта;
-2. переменная окружения `AGENT_LOGBOOK_LANG` (`en` или `ru`);
+2. переменная окружения `PROJECT_LOGBOOK_LANG` (`en` или `ru`);
 3. язык, на котором пишут люди этого проекта;
 4. язык системы;
 5. английский.
@@ -293,7 +296,7 @@ commits are in German. Search in each of Russian, German.»; ответ `journal
 Язык, для которого нет перевода (например, немецкий), пропускается. Язык людей стоит раньше языка
 системы: на компьютере, настроенном на одном языке, часто пишут на другом, а страницу читают они.
 Команды командной строки не про один проект (например, `status`, `sync`, справка) берут язык
-только из `AGENT_LOGBOOK_LANG` и системы.
+только из `PROJECT_LOGBOOK_LANG` и системы.
 
 Переопределить догадку можно профилем: `languages` — языки для поиска, `uiLanguage` — язык
 страницы и командной строки.
@@ -307,12 +310,12 @@ commits are in German. Search in each of Russian, German.»; ответ `journal
 {
   "permissions": {
     "allow": [
-      "mcp__plugin_agent-logbook_journal__journal_brief",
-      "mcp__plugin_agent-logbook_journal__journal_search",
-      "mcp__plugin_agent-logbook_journal__journal_recent",
-      "mcp__plugin_agent-logbook_journal__journal_session",
-      "mcp__plugin_agent-logbook_journal__journal_tasks",
-      "mcp__plugin_agent-logbook_journal__journal_status"
+      "mcp__plugin_project-logbook_journal__journal_brief",
+      "mcp__plugin_project-logbook_journal__journal_search",
+      "mcp__plugin_project-logbook_journal__journal_recent",
+      "mcp__plugin_project-logbook_journal__journal_session",
+      "mcp__plugin_project-logbook_journal__journal_tasks",
+      "mcp__plugin_project-logbook_journal__journal_status"
     ]
   }
 }
@@ -324,9 +327,9 @@ commits are in German. Search in each of Russian, German.»; ответ `journal
 
 Папка данных:
 
-- Windows: `%LOCALAPPDATA%\AgentLogbook`;
-- macOS и Linux: `~/.agent-logbook`;
-- другое место — переменная окружения `AGENT_LOGBOOK_HOME`.
+- Windows: `%LOCALAPPDATA%\ProjectLogbook`;
+- macOS и Linux: `~/.project-logbook`;
+- другое место — переменная окружения `PROJECT_LOGBOOK_HOME`.
 
 В ней: `journal.sqlite` (сам журнал), `connected.json` (подключённые папки), `view/*.html`
 (страницы), `hook.log` и `sync.log` (сбои хука и фонового обновления, второй показывает `journal_status`;
@@ -361,23 +364,23 @@ commits are in German. Search in each of Russian, German.»; ответ `journal
 - **`git`** — только читающие команды (`log`, `rev-list`, `rev-parse`, `branch`, `for-each-ref`,
   `ls-tree`, `cat-file`) в подключённых папках.
 - **Системная программа открытия файлов** (`explorer.exe`, `open` или `xdg-open`) — только для
-  `journal_open` и `/agent-logbook:view`, чтобы показать локальную страницу журнала.
+  `journal_open` и `/project-logbook:view`, чтобы показать локальную страницу журнала.
 - **`node server/journal.mjs view --serve`** — только если вы запустили это сами в терминале: сервер
   страницы на `127.0.0.1:47770`, доступный только с этого компьютера.
 
 ## Как выключить и удалить
 
-- **Выключить:** `/plugin` → плагин `agent-logbook` → Disable, или
-  `claude plugin disable agent-logbook@agent-logbook`.
-- **Удалить плагин:** `claude plugin uninstall agent-logbook@agent-logbook`, затем, если
-  маркетплейс больше не нужен, `claude plugin marketplace remove agent-logbook`.
+- **Выключить:** `/plugin` → плагин `project-logbook` → Disable, или
+  `claude plugin disable project-logbook@project-logbook`.
+- **Удалить плагин:** `claude plugin uninstall project-logbook@project-logbook`, затем, если
+  маркетплейс больше не нужен, `claude plugin marketplace remove project-logbook`.
 - **Удалить данные:** журнал живёт отдельно от плагина и после удаления плагина остаётся. Удалить
   папку данных вручную (см. выше).
 - **Отключить одну папку:** `node "<папка плагина>/server/journal.mjs" disconnect "<папка проекта>"`.
   Собранное остаётся в журнале, но сводка и поиск для этой папки больше не срабатывают. При
   установке из папки `<папка плагина>` — это она сама; при установке из git-репозитория — копия в
-  кэше: `~/.claude/plugins/cache/agent-logbook/agent-logbook/<версия>` (Claude Code),
-  `~/.codex/plugins/cache/agent-logbook/agent-logbook/<версия>` (Codex).
+  кэше: `~/.claude/plugins/cache/project-logbook/project-logbook/<версия>` (Claude Code),
+  `~/.codex/plugins/cache/project-logbook/project-logbook/<версия>` (Codex).
 - Если журнал раньше подключали вручную (MCP-сервер или хук SessionStart в своих настройках),
   уберите их — иначе сводка придёт дважды.
 

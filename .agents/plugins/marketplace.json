@@ -1,14 +1,14 @@
 {
-  "name": "agent-logbook",
+  "name": "project-logbook",
   "interface": {
-    "displayName": "Agent Logbook"
+    "displayName": "Project Logbook"
   },
   "plugins": [
     {
-      "name": "agent-logbook",
+      "name": "project-logbook",
       "source": {
         "source": "local",
-        "path": "./plugins/agent-logbook"
+        "path": "./plugins/project-logbook"
       },
       "policy": {
         "installation": "AVAILABLE",

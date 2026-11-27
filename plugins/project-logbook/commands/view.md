@@ -2,7 +2,7 @@
 description: Открыть в браузере локальную страницу журнала проекта — прошлые чаты, коммиты и задачи
 argument-hint: "[папка проекта]"
 allowed-tools:
-  - mcp__plugin_agent-logbook_journal__journal_open
+  - mcp__plugin_project-logbook_journal__journal_open
 ---
 
 # Страница журнала
@@ -18,8 +18,8 @@ allowed-tools:
    (`page`). Назови человеку этот путь: если браузер не открылся (удалённая машина, нет графической
    среды), страницу можно открыть вручную.
 4. «No journal for …» или «The journal has not been built yet» — папка не подключена или журнал
-   ещё собирается: предложи `/agent-logbook:connect` или проверить готовность через
-   `/agent-logbook:status`.
+   ещё собирается: предложи `/project-logbook:connect` или проверить готовность через
+   `/project-logbook:status`.
    Инструмента `journal_open` нет — сервер журнала не запущен: предложи открыть `/mcp` и проверить
    Node.js (нужна версия 22.13 или новее).
 

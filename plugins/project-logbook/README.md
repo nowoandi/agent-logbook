@@ -1,4 +1,4 @@
-# Agent Logbook — a project journal for AI agents
+# Project Logbook — a project journal for AI agents
 
 A plugin for Claude Code (and Codex). The journal keeps the past chats of Claude Code, Cowork (on
 your own computer) and Codex that belong to a project folder, together with the folder's git log.
@@ -51,9 +51,9 @@ is sent anywhere. A Russian version of this text is in `README.ru.md` in the plu
 - **The journal page.** One local HTML file that works offline: a control centre (where the work
   stopped, activity, tasks), a map of chats and code areas, and a day-by-day timeline. The page and
   the command line are in English or Russian (see "Languages").
-- **The `agent-logbook` skill** — when and how the agent should ask the journal.
-- **Claude Code commands:** `/agent-logbook:connect`, `/agent-logbook:view`,
-  `/agent-logbook:status`.
+- **The `project-logbook` skill** — when and how the agent should ask the journal.
+- **Claude Code commands:** `/project-logbook:connect`, `/project-logbook:view`,
+  `/project-logbook:status`.
 
 An example task file:
 
@@ -130,33 +130,36 @@ Also:
 
 The plugin's repository is a marketplace for Claude Code and Codex: its root holds
 `.claude-plugin/marketplace.json` (Claude Code) and `.agents/plugins/marketplace.json` (Codex), and
-the plugin itself is in `plugins/agent-logbook`. The plugin folder (and the zip) is also a
+the plugin itself is in `plugins/project-logbook`. The plugin folder (and the zip) is also a
 one-plugin marketplace, for Claude Code only.
+
+Up to 1.1.1 the plugin was called **agent-logbook**. To move over, uninstall `agent-logbook` and
+install `project-logbook` as below: the journal moves to its new folder by itself on the first start.
 
 ### Claude Code — the main way
 
 From the git repository:
 
 ```bash
-claude plugin marketplace add <owner>/agent-logbook
-claude plugin install agent-logbook@agent-logbook
+claude plugin marketplace add <owner>/project-logbook
+claude plugin install project-logbook@project-logbook
 ```
 
-Claude Code keeps its own copy of the repository in `~/.claude/plugins/marketplaces/agent-logbook/`
+Claude Code keeps its own copy of the repository in `~/.claude/plugins/marketplaces/project-logbook/`
 and a copy of the plugin in its cache, so you do not need to keep a folder of your own.
 
 From a folder on disk, first unpack the zip where the folder will stay for good, for example
-`C:\Tools\claude-plugins\agent-logbook` (the `.claude-plugin` folder must be inside it):
+`C:\Tools\claude-plugins\project-logbook` (the `.claude-plugin` folder must be inside it):
 
 ```bash
-claude plugin marketplace add "C:\Tools\claude-plugins\agent-logbook"
-claude plugin install agent-logbook@agent-logbook
+claude plugin marketplace add "C:\Tools\claude-plugins\project-logbook"
+claude plugin install project-logbook@project-logbook
 ```
 
 - `marketplace add` takes the full path to the unpacked folder, not to the zip file, and without a
   trailing `\` (in PowerShell `"…\"` breaks the path). The error "Invalid marketplace source format"
   means a placeholder such as `<name>` is still there, or a bare folder name is used: write a
-  relative path as `./agent-logbook`.
+  relative path as `./project-logbook`.
 - A plugin added from a folder runs right from that folder: do not move or delete it, or Claude Code
   reports "failed to load: cache-miss". So not Downloads and not a temp folder.
 
@@ -172,7 +175,7 @@ claude --plugin-dir "<plugin folder>"
 
 - **The Code tab** uses Claude Code plugins: the plugin installed above should appear there too.
   [not verified]
-- **Upload as a file:** Customize › Plugins › Upload plugin, file `agent-logbook-<version>.zip`. The
+- **Upload as a file:** Customize › Plugins › Upload plugin, file `project-logbook-<version>.zip`. The
   app accepts only `.zip` ([#40414](https://github.com/anthropics/claude-code/issues/40414)).
   - An uploaded plugin does not update itself
     ([#93553](https://github.com/anthropics/claude-code/issues/93553)): upload each new version again.
@@ -184,14 +187,14 @@ claude --plugin-dir "<plugin folder>"
 Codex installs the skill and the MCP server from the repository's marketplace, without the hook:
 
 ```bash
-codex plugin marketplace add <owner>/agent-logbook
-codex plugin add agent-logbook@agent-logbook
+codex plugin marketplace add <owner>/project-logbook
+codex plugin add project-logbook@project-logbook
 ```
 
 Installation is verified (Codex 0.131, Windows): `codex plugin add` installs the plugin, and
 `codex mcp list` shows the `journal` server. Work in a live Codex session is not verified, because
 it needs an account sign-in. Codex does not accept the plugin folder (zip) as a marketplace: it
-needs the repository or a local copy of it, with the plugin in `plugins/agent-logbook`.
+needs the repository or a local copy of it, with the plugin in `plugins/project-logbook`.
 
 Without a marketplace you can connect only the MCP server:
 
@@ -201,16 +204,16 @@ codex mcp add journal -- node "<plugin folder>/server/journal.mjs" mcp
 
 If the journal is empty in Codex but full in Claude Code, Codex did not pass the server the
 environment variables with the data folder. Then set it explicitly: add
-`--env AGENT_LOGBOOK_HOME=<data folder>` (see "Data and what the journal reads"). Codex has no hook:
+`--env PROJECT_LOGBOOK_HOME=<data folder>` (see "Data and what the journal reads"). Codex has no hook:
 the agent fetches the brief itself with `journal_brief`.
 
 ## First steps
 
-1. Open a chat in the project folder and run `/agent-logbook:connect` (you can name the folder:
-   `/agent-logbook:connect <folder>`). The journal is built in the background and reads the
+1. Open a chat in the project folder and run `/project-logbook:connect` (you can name the folder:
+   `/project-logbook:connect <folder>`). The journal is built in the background and reads the
    **whole** chat history of this folder, so connect only your own projects.
-2. `/agent-logbook:status` — whether the journal is ready: how many chats and commits it holds.
-3. `/agent-logbook:view` — open the journal page in the browser.
+2. `/project-logbook:status` — whether the journal is ready: how many chats and commits it holds.
+3. `/project-logbook:view` — open the journal page in the browser.
 
 You cannot connect a drive root or your home folder: every chat on the computer would end up in the
 journal. In agents without commands (Codex) the `journal_connect` tool does the same: ask the agent
@@ -229,7 +232,7 @@ nothing. The connect answer says what was found and what was not recognised; wha
 recognised stays as it is, and you can add it to the profile.
 
 If the project names its tasks, fields and statuses in a way the journal did not recognise, keeps
-its own state documents, or wants to set languages, put a `.agent-logbook.json` file in the project
+its own state documents, or wants to set languages, put a `.project-logbook.json` file in the project
 root. Every section and key is optional; anything missing takes the default. An example:
 
 ```json
@@ -283,7 +286,7 @@ root. Every section and key is optional; anything missing takes the default. An 
 
 To describe a project on one computer without touching its repository, use the `projects.json` file
 in the journal's data folder: the key is the full path of the project folder, the value is the same
-profile. It overrides `.agent-logbook.json` section by section. The journal also writes what it
+profile. It overrides `.project-logbook.json` section by section. The journal also writes what it
 found when connecting there.
 
 ## Languages
@@ -300,7 +303,7 @@ Texts for the agent — the brief, the hints and the tool errors — are always 
 page and the command line are in English or Russian, chosen in this order:
 
 1. `uiLanguage` in the project profile;
-2. the environment variable `AGENT_LOGBOOK_LANG` (`en` or `ru`);
+2. the environment variable `PROJECT_LOGBOOK_LANG` (`en` or `ru`);
 3. the language the project's people write in;
 4. the system language;
 5. English.
@@ -308,7 +311,7 @@ page and the command line are in English or Russian, chosen in this order:
 A language without a translation (German, for example) is skipped. The people's language comes
 before the system language: on a computer set up in one language people often write in another,
 and they are the ones who read the page. Command-line commands that are not about one project (for
-example `status`, `sync`, help) take the language only from `AGENT_LOGBOOK_LANG` and the system.
+example `status`, `sync`, help) take the language only from `PROJECT_LOGBOOK_LANG` and the system.
 
 ## Permissions
 
@@ -319,12 +322,12 @@ allowed in advance, with `/permissions` or in `permissions.allow` in the setting
 {
   "permissions": {
     "allow": [
-      "mcp__plugin_agent-logbook_journal__journal_brief",
-      "mcp__plugin_agent-logbook_journal__journal_search",
-      "mcp__plugin_agent-logbook_journal__journal_recent",
-      "mcp__plugin_agent-logbook_journal__journal_session",
-      "mcp__plugin_agent-logbook_journal__journal_tasks",
-      "mcp__plugin_agent-logbook_journal__journal_status"
+      "mcp__plugin_project-logbook_journal__journal_brief",
+      "mcp__plugin_project-logbook_journal__journal_search",
+      "mcp__plugin_project-logbook_journal__journal_recent",
+      "mcp__plugin_project-logbook_journal__journal_session",
+      "mcp__plugin_project-logbook_journal__journal_tasks",
+      "mcp__plugin_project-logbook_journal__journal_status"
     ]
   }
 }
@@ -336,9 +339,9 @@ Better keep `journal_connect` and `journal_open` behind a confirmation.
 
 The data folder:
 
-- Windows: `%LOCALAPPDATA%\AgentLogbook`;
-- macOS and Linux: `~/.agent-logbook`;
-- elsewhere — the environment variable `AGENT_LOGBOOK_HOME`.
+- Windows: `%LOCALAPPDATA%\ProjectLogbook`;
+- macOS and Linux: `~/.project-logbook`;
+- elsewhere — the environment variable `PROJECT_LOGBOOK_HOME`.
 
 It holds `journal.sqlite` (the journal itself), `connected.json` (connected folders), `view/*.html`
 (pages), `hook.log` and `sync.log` (failures of the hook and of the background refresh, shown by
@@ -375,23 +378,23 @@ Everything below runs locally under your user account; the plugin makes no netwo
 - **`git`** — read-only commands (`log`, `rev-list`, `rev-parse`, `branch`, `for-each-ref`,
   `ls-tree`, `cat-file`) in connected folders.
 - **The system file opener** (`explorer.exe`, `open` or `xdg-open`) — only for `journal_open` and
-  `/agent-logbook:view`, to show the local journal page.
+  `/project-logbook:view`, to show the local journal page.
 - **`node server/journal.mjs view --serve`** — only when you run it yourself from a terminal: a
   page server bound to `127.0.0.1:47770`, reachable from this computer only.
 
 ## Turning it off and removing it
 
-- **Turn off:** `/plugin` → the `agent-logbook` plugin → Disable, or
-  `claude plugin disable agent-logbook@agent-logbook`.
-- **Remove the plugin:** `claude plugin uninstall agent-logbook@agent-logbook`, then, if you no
-  longer need the marketplace, `claude plugin marketplace remove agent-logbook`.
+- **Turn off:** `/plugin` → the `project-logbook` plugin → Disable, or
+  `claude plugin disable project-logbook@project-logbook`.
+- **Remove the plugin:** `claude plugin uninstall project-logbook@project-logbook`, then, if you no
+  longer need the marketplace, `claude plugin marketplace remove project-logbook`.
 - **Remove the data:** the journal lives apart from the plugin and stays after the plugin is
   removed. Delete the data folder by hand (see above).
 - **Disconnect one folder:** `node "<plugin folder>/server/journal.mjs" disconnect "<project folder>"`.
   What was collected stays in the journal, but the brief and search no longer work for that folder.
   When installed from a folder, `<plugin folder>` is that folder; when installed from a git
-  repository, it is the cached copy: `~/.claude/plugins/cache/agent-logbook/agent-logbook/<version>`
-  (Claude Code), `~/.codex/plugins/cache/agent-logbook/agent-logbook/<version>` (Codex).
+  repository, it is the cached copy: `~/.claude/plugins/cache/project-logbook/project-logbook/<version>`
+  (Claude Code), `~/.codex/plugins/cache/project-logbook/project-logbook/<version>` (Codex).
 - If you connected the journal by hand before (an MCP server or a SessionStart hook in your own
   settings), remove them, or the brief comes twice.
 

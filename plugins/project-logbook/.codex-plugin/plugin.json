@@ -1,6 +1,6 @@
 {
-  "name": "agent-logbook",
-  "version": "1.1.1",
+  "name": "project-logbook",
+  "version": "2.0.0",
   "description": "Project journal: past chats and the git log of a project folder - search, a brief, tasks. A skill and an MCP server, no hook.",
   "author": {
     "name": "Andrej Hermann"
@@ -17,7 +17,7 @@
   "mcpServers": "./.codex-plugin/mcp.json",
   "hooks": {},
   "interface": {
-    "displayName": "Agent Logbook",
+    "displayName": "Project Logbook",
     "shortDescription": "Past chats and git log of a project: search and a brief",
     "developerName": "Andrej Hermann",
     "category": "Productivity"
